@@ -2,7 +2,6 @@
 
 import {
   Building2,
-  ClipboardCheck,
   Compass,
   LayoutDashboard,
   LineChart,
@@ -31,7 +30,6 @@ const mainNav = [
 ];
 
 const upcomingNav = [
-  { title: "Readiness Assessment", icon: ClipboardCheck, module: "2" },
   { title: "Valuation", icon: LineChart, module: "3" },
   { title: "Roadmap", icon: Map, module: "4" },
 ];
