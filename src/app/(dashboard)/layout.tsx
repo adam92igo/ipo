@@ -1,17 +1,16 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { getCachedSession } from "@/lib/data-access/context";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
-import { auth } from "@/lib/auth";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getCachedSession();
   if (!session) redirect("/sign-in");
   const ctx = await requireOrgPageContext();
 

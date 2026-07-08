@@ -10,6 +10,14 @@ import { isOrgRole, resolveSessionScope, type OrgContext } from "./org-context";
 export { assertRole } from "./org-context";
 
 /**
+ * Session lookup deduplicated per request — layouts, pages and
+ * requireOrgContext all share one better-auth call.
+ */
+export const getCachedSession = cache(async () =>
+  auth.api.getSession({ headers: await headers() }),
+);
+
+/**
  * Resolves the authenticated tenant context for the current request.
  *
  * Verifies membership in the DB rather than trusting the session's
@@ -20,7 +28,7 @@ export { assertRole } from "./org-context";
  * single lookup.
  */
 export const requireOrgContext = cache(async (): Promise<OrgContext> => {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getCachedSession();
   const { userId, organizationId } = resolveSessionScope(session);
 
   const membership = await db

@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IPO Compass
 
-## Getting Started
+SaaS platform that guides European SMEs through IPO readiness: weighted diagnostic
+questionnaire, deterministic valuation, rules-based roadmap and AI-assisted company
+profiling. See [CLAUDE.md](./CLAUDE.md) for architecture and invariants.
 
-First, run the development server:
+## Getting started
+
+Prerequisites: Node 20+, pnpm, Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env        # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+docker compose up -d        # PostgreSQL 17 (+ separate test database)
+pnpm install
+pnpm db:migrate             # apply Drizzle migrations
+pnpm dev                    # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Dev server (Turbopack) |
+| `pnpm test` | Vitest — unit + integration (needs Docker Postgres) |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm lint` | ESLint |
+| `pnpm db:generate` / `pnpm db:migrate` | Drizzle Kit migrations |
+| `pnpm auth:schema` | Regenerate `src/db/schema/auth.ts` from the better-auth config |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Module roadmap
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Foundations** — multi-tenant auth (better-auth organizations), schema, dashboard ✅
+2. **Diagnostic engine** — weighted questionnaire, category scores, radar restitution (TDD)
+3. **Valuation** — DCF, sector comparables, market multiples (TDD)
+4. **Roadmap** — rules engine from assessment results
+5. **AI modules** — profile pre-fill (official website + Pappers), IPO assistant
