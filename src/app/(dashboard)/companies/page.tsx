@@ -9,6 +9,7 @@ import {
 } from "@/lib/data-access/assessments";
 import { listCompanies } from "@/lib/data-access/companies";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
+import { isAiConfigured } from "@/lib/ai/config";
 import { CreateCompanyDialog } from "./create-company-dialog";
 
 export const metadata = { title: "Companies" };
@@ -21,6 +22,7 @@ export default async function CompaniesPage() {
     listLatestCompletedAssessmentsByCompany(ctx),
   ]);
   const canWrite = ctx.role === "owner" || ctx.role === "admin";
+  const aiConfigured = isAiConfigured();
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -34,7 +36,7 @@ export default async function CompaniesPage() {
             The companies this workspace is preparing for the public markets.
           </p>
         </div>
-        {canWrite && <CreateCompanyDialog />}
+        {canWrite && <CreateCompanyDialog aiEnabled={aiConfigured} />}
       </div>
 
       {companies.length === 0 ? (
@@ -50,7 +52,7 @@ export default async function CompaniesPage() {
                 and roadmap modules.
               </p>
             </div>
-            {canWrite && <CreateCompanyDialog />}
+            {canWrite && <CreateCompanyDialog aiEnabled={aiConfigured} />}
           </CardContent>
         </Card>
       ) : (

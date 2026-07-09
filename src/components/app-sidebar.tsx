@@ -17,7 +17,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
@@ -26,9 +25,8 @@ import { UserMenu } from "@/components/user-menu";
 const mainNav = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { title: "Companies", href: "/companies", icon: Building2 },
+  { title: "AI Assistant", href: "/assistant", icon: Sparkles },
 ];
-
-const upcomingNav = [{ title: "AI Assistant", icon: Sparkles, module: "5" }];
 
 export function AppSidebar({
   organizationName,
@@ -76,26 +74,6 @@ export function AppSidebar({
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel className="uppercase italic tracking-wider text-[#c187a1]">
-            /Coming soon/
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {upcomingNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton disabled className="opacity-60">
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge className="text-sidebar-foreground/50">
-                    M{item.module}
-                  </SidebarMenuBadge>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

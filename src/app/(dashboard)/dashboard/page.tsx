@@ -1,9 +1,8 @@
-import { Building2, ClipboardCheck, LineChart, Map } from "lucide-react";
+import { Building2, ClipboardCheck, LineChart, Map, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -13,25 +12,31 @@ import { requireOrgPageContext } from "@/lib/data-access/page-context";
 
 export const metadata = { title: "Overview" };
 
-const upcoming = [
+const modules = [
   {
     title: "Readiness Assessment",
     description:
-      "80–120 weighted questions across Governance, Finance, Growth, Compliance and Reporting.",
+      "100 weighted questions across Governance, Finance, Growth, Compliance and Reporting.",
     icon: ClipboardCheck,
-    module: "Module 2",
+    href: "/companies",
   },
   {
     title: "Valuation",
     description: "DCF, sector comparables and market multiples with an aggregated range.",
     icon: LineChart,
-    module: "Module 3",
+    href: "/companies",
   },
   {
     title: "Roadmap",
     description: "A prioritised action plan generated from your assessment results.",
     icon: Map,
-    module: "Module 4",
+    href: "/companies",
+  },
+  {
+    title: "AI Assistant",
+    description: "IPO process answers, aware of your companies' readiness data.",
+    icon: Sparkles,
+    href: "/assistant",
   },
 ];
 
@@ -78,22 +83,19 @@ export default async function DashboardPage() {
 
       <div className="space-y-3">
         <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Coming soon/
+          /Modules/
         </p>
-        <div className="grid gap-6 md:grid-cols-3">
-          {upcoming.map((item) => (
-            <Card key={item.title} className="bg-muted/50">
-              <CardHeader>
-                <item.icon className="mb-2 size-6 text-primary" />
-                <CardTitle className="text-base text-primary">{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {item.module}
-                </span>
-              </CardContent>
-            </Card>
+        <div className="grid gap-6 md:grid-cols-2">
+          {modules.map((item) => (
+            <Link key={item.title} href={item.href} className="group">
+              <Card className="h-full transition-colors group-hover:border-primary/50">
+                <CardHeader>
+                  <item.icon className="mb-2 size-6 text-primary" />
+                  <CardTitle className="text-base text-primary">{item.title}</CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
