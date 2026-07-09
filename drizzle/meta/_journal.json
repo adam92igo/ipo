@@ -15,6 +15,13 @@
       "when": 1783583374658,
       "tag": "0001_soft_mesmero",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783602250802,
+      "tag": "0002_conscious_nomad",
+      "breakpoints": true
     }
   ]
 }

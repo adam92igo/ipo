@@ -105,9 +105,14 @@ export default async function CompaniesPage() {
                         <Link href={`/companies/${company.id}/valuation`}>Valuation</Link>
                       </Button>
                       {completed && (
-                        <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
-                          <Link href={`/companies/${company.id}/results`}>Results</Link>
-                        </Button>
+                        <>
+                          <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                            <Link href={`/companies/${company.id}/results`}>Results</Link>
+                          </Button>
+                          <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                            <Link href={`/companies/${company.id}/roadmap`}>Roadmap</Link>
+                          </Button>
+                        </>
                       )}
                       <Button asChild size="sm" className="uppercase tracking-wider">
                         <Link href={`/companies/${company.id}/assessment`}>

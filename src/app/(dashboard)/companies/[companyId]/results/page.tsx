@@ -230,10 +230,13 @@ export default async function ResultsPage({
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
         <Button asChild variant="ghost" className="uppercase tracking-[0.15em]">
-          <Link href="/companies">
-            Back to companies <ArrowRight data-slot="icon" />
+          <Link href="/companies">Back to companies</Link>
+        </Button>
+        <Button asChild className="uppercase tracking-[0.15em]">
+          <Link href={`/companies/${company.id}/roadmap`}>
+            Build the roadmap <ArrowRight data-slot="icon" />
           </Link>
         </Button>
       </div>

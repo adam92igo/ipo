@@ -14,6 +14,8 @@ import { describe, expect, it } from "vitest";
 const PINNED = {
   "config/questionnaire.v1.json":
     "sha256:50e824039ee8748c3906f28d875d137aa7bee7f082ff8e3afd6c497185185cfe",
+  "config/roadmap-rules.v1.json":
+    "sha256:32be18be49f4bbce9f734a5674b44b609a497ec62f2318aa0eca84737a53a37b",
   "config/valuation-refs.v1.json":
     "sha256:1a89fa436156b8905f94949682b52689e5fec84ecd5465ffc90824f569987b31",
 };

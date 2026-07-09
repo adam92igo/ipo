@@ -1,0 +1,1 @@
+ALTER TABLE "roadmap_item" ADD COLUMN "rules_version" text NOT NULL;

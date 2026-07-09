@@ -4,7 +4,7 @@ import {
   Building2,
   Compass,
   LayoutDashboard,
-  Map,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,7 +28,7 @@ const mainNav = [
   { title: "Companies", href: "/companies", icon: Building2 },
 ];
 
-const upcomingNav = [{ title: "Roadmap", icon: Map, module: "4" }];
+const upcomingNav = [{ title: "AI Assistant", icon: Sparkles, module: "5" }];
 
 export function AppSidebar({
   organizationName,

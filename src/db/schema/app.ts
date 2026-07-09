@@ -168,8 +168,9 @@ export const roadmapItem = pgTable(
     assessmentId: text("assessment_id")
       .notNull()
       .references(() => assessment.id, { onDelete: "cascade" }),
-    // Rule from config/roadmap-rules.v*.json that produced this item.
+    // Rule + version from config/roadmap-rules.v*.json that produced this item.
     ruleId: text("rule_id").notNull(),
+    rulesVersion: text("rules_version").notNull(),
     title: text("title").notNull(),
     description: text("description").notNull(),
     category: text("category").notNull(),
