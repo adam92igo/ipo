@@ -36,12 +36,12 @@ SaaS platform that guides European SMEs through IPO readiness: weighted diagnost
 4. **Secrets** stay in `.env` (gitignored); `.env.example` documents required variables without values.
 5. UI copy is English. Amounts are EUR.
 
-## Module roadmap
+## Module roadmap — all five delivered (MVP complete)
 
-1. Foundations (auth, schema, dashboard layout) — this module
-2. Diagnostic engine (questionnaire, weighted scoring, radar restitution) — TDD
-3. Valuation (DCF, sector comparables, market multiples; aggregated min–max range) — TDD
-4. Roadmap (rules engine from assessment results)
-5. AI modules ("Fill with AI" from official website + Pappers only — no LinkedIn scraping; contextual IPO assistant)
+1. ✅ Foundations (auth, schema, dashboard layout)
+2. ✅ Diagnostic engine (questionnaire, weighted scoring, radar restitution) — TDD
+3. ✅ Valuation (DCF, sector comparables, market multiples; aggregated min–max range) — TDD
+4. ✅ Roadmap (rules engine from assessment results)
+5. ✅ AI modules ("Fill with AI" from official website + Pappers only — no LinkedIn scraping; contextual IPO assistant). AI code lives in `src/lib/ai/`; degrades gracefully when `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are unset.
 
-One module at a time; clean commit + code review before moving to the next.
+Method going forward: one feature at a time; clean commit + code review, then push to origin/main (github.com/adam92igo/ipo, private).
