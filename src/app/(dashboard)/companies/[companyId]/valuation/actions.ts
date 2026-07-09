@@ -93,6 +93,5 @@ export async function runValuationAction(input: {
   }
 
   revalidatePath(`/companies/${parsed.data.companyId}/valuation`);
-  revalidatePath("/companies");
   return { ok: true };
 }

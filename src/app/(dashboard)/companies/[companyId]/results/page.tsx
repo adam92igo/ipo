@@ -1,6 +1,6 @@
 import { ArrowRight, CircleCheck, RotateCcw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ScoreGauge } from "@/components/charts/score-gauge";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +22,7 @@ import {
   getLatestCompletedAssessment,
 } from "@/lib/data-access/assessments";
 import { getCompany } from "@/lib/data-access/companies";
-import { NotFoundError } from "@/lib/data-access/errors";
-import { requireOrgPageContext } from "@/lib/data-access/page-context";
+import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
 import { getQuestionnaire } from "@/lib/questionnaire";
 
 export const metadata = { title: "Readiness results" };
@@ -36,16 +35,12 @@ export default async function ResultsPage({
   const { companyId } = await params;
   const ctx = await requireOrgPageContext();
 
-  let company, assessment;
-  try {
-    [company, assessment] = await Promise.all([
+  const [company, assessment] = await orNotFound(() =>
+    Promise.all([
       getCompany(ctx, companyId),
       getLatestCompletedAssessment(ctx, companyId),
-    ]);
-  } catch (error) {
-    if (error instanceof NotFoundError) notFound();
-    throw error;
-  }
+    ]),
+  );
   if (!assessment) {
     redirect(`/companies/${companyId}/assessment`);
   }

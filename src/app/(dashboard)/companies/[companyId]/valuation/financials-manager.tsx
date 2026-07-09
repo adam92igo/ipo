@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError } from "@/components/field-error";
 import type { FinancialYear } from "@/engines/valuation/types";
 import { formatEur } from "@/lib/format";
 import {
@@ -32,22 +33,24 @@ const METRICS = [
   { name: "freeCashFlow", label: "Free cash flow" },
 ] as const;
 
-function FieldError({ errors }: { errors?: string[] }) {
-  if (!errors?.length) return null;
-  return <p className="text-xs text-destructive">{errors[0]}</p>;
-}
-
 function YearForm({
   companyId,
   year,
+  existingYears,
   onSaved,
 }: {
   companyId: string;
   year: FinancialYear | null;
+  existingYears: number[];
   onSaved: () => void;
 }) {
   const action = saveFinancialYearAction.bind(null, companyId);
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [fiscalYear, setFiscalYear] = useState<string>(
+    year ? String(year.fiscalYear) : "",
+  );
+  // Guard against silently overwriting an existing year via the Add dialog.
+  const duplicate = year === null && existingYears.includes(Number(fiscalYear));
 
   useEffect(() => {
     if (state.ok) onSaved();
@@ -64,10 +67,18 @@ function YearForm({
           type="number"
           min={1990}
           max={2100}
-          defaultValue={year?.fiscalYear}
+          value={fiscalYear}
+          onChange={(e) => setFiscalYear(e.target.value)}
           readOnly={year !== null}
           required
         />
+        {duplicate && (
+          <FieldError
+            errors={[
+              `${fiscalYear} already exists — use its edit button to change it.`,
+            ]}
+          />
+        )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {METRICS.map((metric) => (
@@ -88,7 +99,11 @@ function YearForm({
         Amounts in euros. At least one metric is required; three years of history
         give the most reliable valuation.
       </p>
-      <Button type="submit" disabled={pending} className="w-full uppercase tracking-[0.15em]">
+      <Button
+        type="submit"
+        disabled={pending || duplicate}
+        className="w-full uppercase tracking-[0.15em]"
+      >
         {pending ? "Saving…" : "Save year"}
       </Button>
     </form>
@@ -114,6 +129,13 @@ export function FinancialsManager({
   }, []);
 
   function handleDelete(fiscalYear: number) {
+    if (
+      !window.confirm(
+        `Delete fiscal year ${fiscalYear}? Its figures will be removed permanently.`,
+      )
+    ) {
+      return;
+    }
     startDeleting(async () => {
       const result = await deleteFinancialYearAction({ companyId, fiscalYear });
       if (!result.ok) toast.error(result.error ?? "Could not delete the year");
@@ -218,7 +240,14 @@ export function FinancialsManager({
               </DialogDescription>
             </DialogHeader>
             {/* Mounted per open cycle so the action state resets between uses. */}
-            {open && <YearForm companyId={companyId} year={editing} onSaved={onSaved} />}
+            {open && (
+              <YearForm
+                companyId={companyId}
+                year={editing}
+                existingYears={financials.map((f) => f.fiscalYear)}
+                onSaved={onSaved}
+              />
+            )}
           </DialogContent>
         </Dialog>
       )}

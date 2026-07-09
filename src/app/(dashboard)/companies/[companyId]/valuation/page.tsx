@@ -1,5 +1,4 @@
 import { Info } from "lucide-react";
-import { notFound } from "next/navigation";
 import { ValuationRangeChart } from "@/components/charts/valuation-range-chart";
 import {
   Card,
@@ -8,13 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { MethodResult } from "@/engines/valuation";
-import { NotFoundError } from "@/lib/data-access/errors";
-import { listFinancials } from "@/lib/data-access/financials";
+import { equityRangeOf, type MethodResult } from "@/engines/valuation";
+import { listFinancialsFor } from "@/lib/data-access/financials";
 import { getCompany } from "@/lib/data-access/companies";
-import { requireOrgPageContext } from "@/lib/data-access/page-context";
+import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
 import {
-  getLatestValuationRun,
+  getLatestValuationRunFor,
   type ValuationRunResults,
 } from "@/lib/data-access/valuations";
 import { formatEurCompact } from "@/lib/format";
@@ -30,11 +28,7 @@ const METHOD_LABELS: Record<string, string> = {
   market_multiples: "Market multiples (EV/Revenue)",
 };
 
-function methodRange(m: MethodResult) {
-  return m.method === "dcf"
-    ? { low: m.equityValue, mid: m.equityValue, high: m.equityValue }
-    : m.equity;
-}
+const methodRange = (m: MethodResult) => equityRangeOf(m);
 
 export default async function ValuationPage({
   params,
@@ -44,17 +38,11 @@ export default async function ValuationPage({
   const { companyId } = await params;
   const ctx = await requireOrgPageContext();
 
-  let company, financials, latestRun;
-  try {
-    company = await getCompany(ctx, companyId);
-    [financials, latestRun] = await Promise.all([
-      listFinancials(ctx, companyId),
-      getLatestValuationRun(ctx, companyId),
-    ]);
-  } catch (error) {
-    if (error instanceof NotFoundError) notFound();
-    throw error;
-  }
+  const company = await orNotFound(() => getCompany(ctx, companyId));
+  const [financials, latestRun] = await Promise.all([
+    listFinancialsFor(ctx, company),
+    getLatestValuationRunFor(ctx, company),
+  ]);
 
   const results = latestRun ? (latestRun.results as ValuationRunResults) : null;
   const canWrite = ctx.role === "owner" || ctx.role === "admin";

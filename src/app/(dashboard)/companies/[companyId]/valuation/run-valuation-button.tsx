@@ -1,7 +1,6 @@
 "use client";
 
 import { Calculator } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,18 +15,17 @@ export function RunValuationButton({
   hasFinancials: boolean;
   hasExistingRun: boolean;
 }) {
-  const router = useRouter();
   const [running, startRunning] = useTransition();
 
   function handleRun() {
     startRunning(async () => {
+      // revalidatePath in the action already streams the re-rendered page.
       const result = await runValuationAction({ companyId });
       if (!result.ok) {
         toast.error(result.error ?? "Could not run the valuation");
         return;
       }
       toast.success("Valuation updated");
-      router.refresh();
     });
   }
 

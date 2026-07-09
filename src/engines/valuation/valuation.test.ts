@@ -165,6 +165,26 @@ describe("matchSector", () => {
   it("falls back to the default sector", () => {
     expect(matchSector("Boulangerie", refs).label).toBe("Default");
   });
+
+  it("prefers the longest matching alias over a shorter generic one", () => {
+    const twoSectors: ValuationRefs = {
+      ...refs,
+      sectors: {
+        software: { ...refs.sectors.software, aliases: ["tech"] },
+        healthcare: {
+          label: "Healthcare",
+          aliases: ["biotech"],
+          wacc: 0.11,
+          evEbitda: { low: 8, mid: 11, high: 14 },
+          evRevenue: { low: 1.5, mid: 2.8, high: 4.5 },
+        },
+        default: refs.sectors.default,
+      },
+    };
+    // "biotech" contains both "tech" (software) and "biotech" (healthcare);
+    // the longer, more specific alias must win regardless of object order.
+    expect(matchSector("Biotech", twoSectors).label).toBe("Healthcare");
+  });
 });
 
 describe("prepareValuation", () => {
@@ -212,6 +232,47 @@ describe("prepareValuation", () => {
         refs,
       }),
     ).toThrow(NotApplicableError);
+  });
+
+  it("keeps the full CAGR when the forecast horizon is a single year", () => {
+    const oneYear: ValuationRefs = {
+      ...refs,
+      discounting: { forecastYears: 1, terminalGrowth: 0.02 },
+    };
+    const result = prepareValuation({ financials, sector: "SaaS", refs: oneYear });
+    const dcf = result.methods.find((m) => m.method === "dcf")!;
+    // CAGR 25% clamped to 20% must drive the single forecast year, not the
+    // terminal growth rate.
+    expect(dcf.assumptions[0]).toContain("20.0%");
+  });
+
+  it("takes net debt from the most recent year that provides it", () => {
+    const withDebtOnlyYear: FinancialYear[] = [
+      ...financials,
+      // Latest year carries only the refreshed debt figure.
+      { fiscalYear: 2026, revenue: null, ebitda: null, netIncome: null, netDebt: 2000, freeCashFlow: null },
+    ];
+    const result = prepareValuation({
+      financials: withDebtOnlyYear,
+      sector: "SaaS",
+      refs,
+    });
+    // Metrics come from 2025 (ebitda 1500), debt from 2026 (2000):
+    // comparables = 1500 * {9,12,15} - 2000
+    const comparables = result.methods.find((m) => m.method === "comparables")!;
+    expect("equity" in comparables && comparables.equity).toEqual({
+      low: 11500,
+      mid: 16000,
+      high: 20500,
+    });
+  });
+
+  it("floors the DCF equity value at zero like the multiple methods", () => {
+    const heavyDebt = financials.map((f) => ({ ...f, netDebt: 100_000_000 }));
+    const result = prepareValuation({ financials: heavyDebt, sector: "SaaS", refs });
+    const dcf = result.methods.find((m) => m.method === "dcf")!;
+    expect("equityValue" in dcf && dcf.equityValue).toBe(0);
+    expect(result.aggregated.low).toBe(0);
   });
 
   it("uses zero net debt when the latest year does not provide it", () => {

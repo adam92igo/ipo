@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Question, Questionnaire } from "@/engines/scoring/types";
 import questionnaireV1 from "../../config/questionnaire.v1.json";
+import { createVersionedConfig } from "./versioned-config";
 
 const choiceSchema = z.object({
   id: z.string().min(1),
@@ -52,26 +53,16 @@ export const questionnaireSchema = z
     { message: "question ids must be unique across the questionnaire" },
   );
 
-const registry: Record<string, unknown> = {
-  v1: questionnaireV1,
-};
-
 export const CURRENT_QUESTIONNAIRE_VERSION = "v1";
 
-// The registry entries are static imports, so each version is parsed once.
-const parsedCache = new Map<string, Questionnaire>();
 const questionIndexCache = new Map<string, Map<string, Question>>();
 
 /** Parses and validates a versioned questionnaire config. Throws on unknown version or invalid content. */
-export function getQuestionnaire(version: string): Questionnaire {
-  const cached = parsedCache.get(version);
-  if (cached) return cached;
-  const raw = registry[version];
-  if (!raw) throw new Error(`Unknown questionnaire version: ${version}`);
-  const parsed = questionnaireSchema.parse(raw) as Questionnaire;
-  parsedCache.set(version, parsed);
-  return parsed;
-}
+export const getQuestionnaire = createVersionedConfig<Questionnaire>(
+  "questionnaire",
+  { v1: questionnaireV1 },
+  questionnaireSchema,
+);
 
 /** O(1) question lookup by id for a given version. */
 export function getQuestionIndex(version: string): Map<string, Question> {

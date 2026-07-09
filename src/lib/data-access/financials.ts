@@ -3,7 +3,7 @@ import type { FinancialYear } from "@/engines/valuation/types";
 import { db } from "../../db";
 import { companyFinancials } from "../../db/schema";
 import type { FinancialYearInput } from "../validation/financials";
-import { getCompany } from "./companies";
+import { getCompany, type Company } from "./companies";
 import { NotFoundError } from "./errors";
 import { assertRole, type OrgContext } from "./org-context";
 
@@ -16,7 +16,16 @@ export async function listFinancials(
   ctx: OrgContext,
   companyId: string,
 ): Promise<FinancialYear[]> {
-  await getCompany(ctx, companyId); // proves org ownership
+  const company = await getCompany(ctx, companyId); // proves org ownership
+  return listFinancialsFor(ctx, company);
+}
+
+/** Like listFinancials, but skips the ownership re-check for a company the caller already verified. */
+export async function listFinancialsFor(
+  ctx: OrgContext,
+  company: Company,
+): Promise<FinancialYear[]> {
+  const companyId = company.id;
   const rows = await db
     .select()
     .from(companyFinancials)

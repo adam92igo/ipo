@@ -19,6 +19,13 @@ describe("valuation refs v1 config", () => {
     }
   });
 
+  it("routes biotech/medtech to healthcare despite software's generic 'tech' alias", () => {
+    expect(matchSector("Biotech", refs).label).toBe(refs.sectors.healthcare.label);
+    expect(matchSector("Medtech startup", refs).label).toBe(
+      refs.sectors.healthcare.label,
+    );
+  });
+
   it("is memoized (same object identity across calls)", () => {
     expect(getValuationRefs("v1")).toBe(refs);
   });

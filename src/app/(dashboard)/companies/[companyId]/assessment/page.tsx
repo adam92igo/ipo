@@ -1,11 +1,9 @@
-import { notFound } from "next/navigation";
 import {
   getActiveAssessment,
   getAnswersFor,
 } from "@/lib/data-access/assessments";
 import { getCompany } from "@/lib/data-access/companies";
-import { NotFoundError } from "@/lib/data-access/errors";
-import { requireOrgPageContext } from "@/lib/data-access/page-context";
+import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
 import {
   CURRENT_QUESTIONNAIRE_VERSION,
   getQuestionnaire,
@@ -26,25 +24,20 @@ export default async function AssessmentPage({
   const { companyId } = await params;
   const ctx = await requireOrgPageContext();
 
-  try {
-    const company = await getCompany(ctx, companyId);
-    const active = await getActiveAssessment(ctx, company.id);
-    const answers = active ? await getAnswersFor(ctx, active) : {};
-    const questionnaire = getQuestionnaire(
-      active?.questionnaireVersion ?? CURRENT_QUESTIONNAIRE_VERSION,
-    );
+  const company = await orNotFound(() => getCompany(ctx, companyId));
+  const active = await getActiveAssessment(ctx, company.id);
+  const answers = active ? await getAnswersFor(ctx, active) : {};
+  const questionnaire = getQuestionnaire(
+    active?.questionnaireVersion ?? CURRENT_QUESTIONNAIRE_VERSION,
+  );
 
-    return (
-      <AssessmentForm
-        assessmentId={active?.id ?? null}
-        companyId={company.id}
-        companyName={company.name}
-        questionnaire={questionnaire}
-        initialAnswers={answers}
-      />
-    );
-  } catch (error) {
-    if (error instanceof NotFoundError) notFound();
-    throw error;
-  }
+  return (
+    <AssessmentForm
+      assessmentId={active?.id ?? null}
+      companyId={company.id}
+      companyName={company.name}
+      questionnaire={questionnaire}
+      initialAnswers={answers}
+    />
+  );
 }

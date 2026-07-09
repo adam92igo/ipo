@@ -14,14 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError } from "@/components/field-error";
 import { createCompanyAction, type CreateCompanyState } from "./actions";
 
 const initialState: CreateCompanyState = { ok: false };
-
-function FieldError({ errors }: { errors?: string[] }) {
-  if (!errors?.length) return null;
-  return <p className="text-xs text-destructive">{errors[0]}</p>;
-}
 
 export function CreateCompanyDialog() {
   const [open, setOpen] = useState(false);

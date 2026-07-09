@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ValuationRefs } from "@/engines/valuation/types";
 import valuationRefsV1 from "../../config/valuation-refs.v1.json";
+import { createVersionedConfig } from "./versioned-config";
 
 const rangeSchema = z
   .object({
@@ -44,21 +45,11 @@ export const valuationRefsSchema = z
     { message: "every sector WACC must exceed the terminal growth rate" },
   );
 
-const registry: Record<string, unknown> = {
-  v1: valuationRefsV1,
-};
-
 export const CURRENT_VALUATION_REFS_VERSION = "v1";
 
-const parsedCache = new Map<string, ValuationRefs>();
-
 /** Parses and validates a versioned refs file, once per version. */
-export function getValuationRefs(version: string): ValuationRefs {
-  const cached = parsedCache.get(version);
-  if (cached) return cached;
-  const raw = registry[version];
-  if (!raw) throw new Error(`Unknown valuation refs version: ${version}`);
-  const parsed = valuationRefsSchema.parse(raw) as ValuationRefs;
-  parsedCache.set(version, parsed);
-  return parsed;
-}
+export const getValuationRefs = createVersionedConfig<ValuationRefs>(
+  "valuation refs",
+  { v1: valuationRefsV1 },
+  valuationRefsSchema,
+);

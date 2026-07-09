@@ -54,7 +54,8 @@ export function dcfValuation(inputs: DcfInputs): DcfResult {
 
   const enterpriseValue =
     presentValues.reduce((sum, pv) => sum + pv, 0) + terminalValuePresent;
-  const equityValue = enterpriseValue - netDebt;
+  // Floored at 0 like the multiple methods — equity cannot go below zero.
+  const equityValue = Math.max(0, enterpriseValue - netDebt);
 
   return {
     method: "dcf",
@@ -102,7 +103,8 @@ export function marketMultiplesValuation(inputs: MultipleInputs): MultipleResult
   return applyMultiple("market_multiples", "revenue", inputs);
 }
 
-function equityRangeOf(result: MethodResult): Range {
+/** Equity range of any method result (DCF collapses to a point range). */
+export function equityRangeOf(result: MethodResult): Range {
   if (result.method === "dcf") {
     return { low: result.equityValue, mid: result.equityValue, high: result.equityValue };
   }
@@ -129,16 +131,26 @@ export function aggregateValuation(
   };
 }
 
-/** Case-insensitive alias match on the company's free-text sector; falls back to `default`. */
+/**
+ * Case-insensitive alias match on the company's free-text sector; the LONGEST
+ * matching alias wins so specific entries beat generic ones ("biotech" beats
+ * "tech"). Falls back to `default`.
+ */
 export function matchSector(sector: string, refs: ValuationRefs): SectorRefs {
   const needle = sector.toLowerCase();
+  let best: { entry: SectorRefs; aliasLength: number } | null = null;
   for (const [key, entry] of Object.entries(refs.sectors)) {
     if (key === "default") continue;
-    if (entry.aliases.some((alias) => needle.includes(alias.toLowerCase()))) {
-      return entry;
+    for (const alias of entry.aliases) {
+      if (
+        needle.includes(alias.toLowerCase()) &&
+        (!best || alias.length > best.aliasLength)
+      ) {
+        best = { entry, aliasLength: alias.length };
+      }
     }
   }
-  return refs.sectors.default;
+  return best?.entry ?? refs.sectors.default;
 }
 
 export interface PreparedValuation {
@@ -169,15 +181,15 @@ export function prepareValuation({
   sector: string;
   refs: ValuationRefs;
 }): PreparedValuation {
-  const usable = [...financials]
-    .filter(
-      (f) =>
-        f.revenue !== null ||
-        f.ebitda !== null ||
-        f.freeCashFlow !== null ||
-        f.netIncome !== null,
-    )
-    .sort((a, b) => a.fiscalYear - b.fiscalYear);
+  const sorted = [...financials].sort((a, b) => a.fiscalYear - b.fiscalYear);
+  // Metrics come from the latest year carrying a valuation metric...
+  const usable = sorted.filter(
+    (f) =>
+      f.revenue !== null ||
+      f.ebitda !== null ||
+      f.freeCashFlow !== null ||
+      f.netIncome !== null,
+  );
   if (usable.length === 0)
     throw new NotApplicableError(
       "aggregate",
@@ -185,15 +197,23 @@ export function prepareValuation({
     );
 
   const latest = usable[usable.length - 1];
+  // ...while net debt comes from the most recent year that provides it (a
+  // debt-only year is a legitimate refresh of the balance-sheet picture).
+  const latestDebtYear = [...sorted].reverse().find((f) => f.netDebt !== null);
   const sectorRefs = matchSector(sector, refs);
   const assumptions: string[] = [
     `Sector mapped to "${sectorRefs.label}" (refs ${refs.version})`,
     `Latest fiscal year used: ${latest.fiscalYear}`,
   ];
 
-  const netDebt = latest.netDebt ?? 0;
-  if (latest.netDebt === null)
-    assumptions.push("Net debt not provided for the latest year — assumed 0 EUR");
+  const netDebt = latestDebtYear?.netDebt ?? 0;
+  if (!latestDebtYear) {
+    assumptions.push("Net debt not provided — assumed 0 EUR");
+  } else if (latestDebtYear.fiscalYear !== latest.fiscalYear) {
+    assumptions.push(
+      `Net debt taken from fiscal year ${latestDebtYear.fiscalYear}`,
+    );
+  }
 
   // Revenue CAGR over the available span, clamped.
   const withRevenue = usable.filter((f) => f.revenue !== null && f.revenue > 0);
@@ -224,7 +244,8 @@ export function prepareValuation({
   // Linear decay from initial growth to terminal growth across the horizon.
   const { forecastYears, terminalGrowth } = refs.discounting;
   const growthRates = Array.from({ length: forecastYears }, (_, i) => {
-    const t = forecastYears === 1 ? 1 : i / (forecastYears - 1);
+    // Single-year horizon keeps the full initial growth (t=0).
+    const t = forecastYears === 1 ? 0 : i / (forecastYears - 1);
     return initialGrowth + (terminalGrowth - initialGrowth) * t;
   });
 

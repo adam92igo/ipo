@@ -6,8 +6,8 @@ import {
   CURRENT_VALUATION_REFS_VERSION,
   getValuationRefs,
 } from "../valuation-refs";
-import { getCompany } from "./companies";
-import { listFinancials } from "./financials";
+import { getCompany, type Company } from "./companies";
+import { listFinancialsFor } from "./financials";
 import type { OrgContext } from "./org-context";
 
 export type ValuationRun = typeof valuationRun.$inferSelect;
@@ -29,7 +29,7 @@ export async function runValuation(
   companyId: string,
 ): Promise<ValuationRun> {
   const company = await getCompany(ctx, companyId);
-  const financials = await listFinancials(ctx, companyId);
+  const financials = await listFinancialsFor(ctx, company);
   const refs = getValuationRefs(CURRENT_VALUATION_REFS_VERSION);
 
   // Throws NotApplicableError when nothing usable exists — actions map it.
@@ -59,7 +59,16 @@ export async function getLatestValuationRun(
   ctx: OrgContext,
   companyId: string,
 ): Promise<ValuationRun | null> {
-  await getCompany(ctx, companyId); // proves org ownership, 404s foreign ids
+  const company = await getCompany(ctx, companyId); // proves org ownership
+  return getLatestValuationRunFor(ctx, company);
+}
+
+/** Like getLatestValuationRun, for a company the caller already verified. */
+export async function getLatestValuationRunFor(
+  ctx: OrgContext,
+  company: Company,
+): Promise<ValuationRun | null> {
+  const companyId = company.id;
   const rows = await db
     .select()
     .from(valuationRun)
