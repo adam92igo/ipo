@@ -2,6 +2,7 @@ import {
   InvalidAnswerError,
   MissingAnswersError,
 } from "@/engines/scoring";
+import { NotApplicableError } from "@/engines/valuation";
 import {
   ForbiddenError,
   InvalidStateError,
@@ -21,5 +22,7 @@ export function actionErrorMessage(error: unknown): string {
   if (error instanceof MissingAnswersError)
     return `Please answer every question first (${error.missingQuestionIds.length} remaining).`;
   if (error instanceof InvalidAnswerError) return "This answer is not valid for the question.";
+  if (error instanceof NotApplicableError)
+    return `Valuation not possible yet — ${error.reason}.`;
   return "Something went wrong. Please try again.";
 }

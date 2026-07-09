@@ -101,6 +101,9 @@ export default async function CompaniesPage() {
                       </span>
                     )}
                     <div className="flex gap-2">
+                      <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                        <Link href={`/companies/${company.id}/valuation`}>Valuation</Link>
+                      </Button>
                       {completed && (
                         <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
                           <Link href={`/companies/${company.id}/results`}>Results</Link>

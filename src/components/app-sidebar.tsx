@@ -4,7 +4,6 @@ import {
   Building2,
   Compass,
   LayoutDashboard,
-  LineChart,
   Map,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,10 +28,7 @@ const mainNav = [
   { title: "Companies", href: "/companies", icon: Building2 },
 ];
 
-const upcomingNav = [
-  { title: "Valuation", icon: LineChart, module: "3" },
-  { title: "Roadmap", icon: Map, module: "4" },
-];
+const upcomingNav = [{ title: "Roadmap", icon: Map, module: "4" }];
 
 export function AppSidebar({
   organizationName,
