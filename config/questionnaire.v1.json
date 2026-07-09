@@ -1,5 +1,6 @@
 {
   "version": "v1",
+  "scaleLabels": ["Not started", "Early stage", "Partial", "Advanced", "Fully in place"],
   "thresholds": { "strength": 75, "weakness": 60 },
   "categories": [
     {

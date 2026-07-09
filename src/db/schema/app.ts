@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   integer,
   jsonb,
@@ -112,6 +113,10 @@ export const assessment = pgTable(
   (t) => [
     index("assessment_org_idx").on(t.organizationId),
     index("assessment_company_idx").on(t.companyId),
+    // DB-level guarantee: at most one open assessment per company.
+    uniqueIndex("assessment_active_company_uq")
+      .on(t.companyId)
+      .where(sql`${t.status} = 'in_progress'`),
   ],
 );
 

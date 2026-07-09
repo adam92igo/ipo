@@ -5,9 +5,34 @@ import { z } from "zod";
 import { actionErrorMessage } from "@/lib/data-access/action-errors";
 import {
   completeAssessment,
+  getOrCreateActiveAssessment,
   saveAnswer,
 } from "@/lib/data-access/assessments";
 import { requireOrgContext } from "@/lib/data-access/context";
+
+const startInput = z.object({
+  companyId: z.string().min(1).max(64),
+});
+
+/**
+ * Assessment rows are created HERE (a POST), never as a render side effect —
+ * link prefetches and crawler GETs must not mint database rows.
+ */
+export async function startAssessmentAction(
+  input: z.infer<typeof startInput>,
+): Promise<{ ok: boolean; assessmentId?: string; error?: string }> {
+  const parsed = startInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid payload." };
+
+  try {
+    const ctx = await requireOrgContext();
+    const assessment = await getOrCreateActiveAssessment(ctx, parsed.data.companyId);
+    revalidatePath("/companies");
+    return { ok: true, assessmentId: assessment.id };
+  } catch (error) {
+    return { ok: false, error: actionErrorMessage(error) };
+  }
+}
 
 const saveAnswerInput = z.object({
   assessmentId: z.string().min(1).max(64),
@@ -42,7 +67,6 @@ export async function saveAnswerAction(
 
 const completeInput = z.object({
   assessmentId: z.string().min(1).max(64),
-  companyId: z.string().min(1).max(64),
 });
 
 export async function completeAssessmentAction(
@@ -59,7 +83,7 @@ export async function completeAssessmentAction(
   }
 
   // Deliberately NOT revalidating the assessment subtree: re-rendering the
-  // form page here would getOrCreate a fresh empty assessment mid-navigation.
+  // form page mid-navigation serves no one; results loads fresh data anyway.
   revalidatePath("/companies");
   revalidatePath("/dashboard");
   return { ok: true };

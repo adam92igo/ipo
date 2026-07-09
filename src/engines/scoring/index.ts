@@ -119,22 +119,44 @@ export function buildRestitution(
   answers: Answers,
   options: { maxActions?: number } = {},
 ): Restitution {
-  const { maxActions = 5 } = options;
   const scores = computeScores(questionnaire, answers);
+  return {
+    ...classifyCategories(scores.categories, questionnaire.thresholds),
+    priorityActions: rankPriorityActions(questionnaire, answers, options),
+  };
+}
 
+/**
+ * Threshold classification over ALREADY-COMPUTED scores — lets callers reuse
+ * the scores frozen at completion instead of recomputing from answers.
+ */
+export function classifyCategories(
+  categories: CategoryScore[],
+  thresholds: Questionnaire["thresholds"],
+): { strengths: CategoryScore[]; weaknesses: CategoryScore[] } {
   const strengths: CategoryScore[] = [];
   const weaknesses: CategoryScore[] = [];
-  for (const category of scores.categories) {
-    if (category.score >= questionnaire.thresholds.strength) strengths.push(category);
-    else if (category.score < questionnaire.thresholds.weakness)
-      weaknesses.push(category);
+  for (const category of categories) {
+    if (category.score >= thresholds.strength) strengths.push(category);
+    else if (category.score < thresholds.weakness) weaknesses.push(category);
   }
+  return { strengths, weaknesses };
+}
 
+/** Priority actions ranked by impact = weight x (1 - normalized answer). */
+export function rankPriorityActions(
+  questionnaire: Questionnaire,
+  answers: Answers,
+  options: { maxActions?: number } = {},
+): PriorityAction[] {
+  const { maxActions = 5 } = options;
   const candidates: PriorityAction[] = [];
   for (const category of questionnaire.categories) {
     for (const question of category.questions) {
       if (!question.actionLabel) continue;
-      const impact = question.weight * (1 - normalizeAnswer(question, answers[question.id]));
+      const value = answers[question.id];
+      if (value === undefined) continue;
+      const impact = question.weight * (1 - normalizeAnswer(question, value));
       if (impact <= 0) continue;
       candidates.push({
         questionId: question.id,
@@ -145,9 +167,5 @@ export function buildRestitution(
     }
   }
   // Stable sort: equal impacts keep questionnaire order.
-  const priorityActions = candidates
-    .sort((a, b) => b.impact - a.impact)
-    .slice(0, maxActions);
-
-  return { strengths, weaknesses, priorityActions };
+  return candidates.sort((a, b) => b.impact - a.impact).slice(0, maxActions);
 }

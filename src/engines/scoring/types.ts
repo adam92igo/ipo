@@ -28,6 +28,8 @@ export interface Category {
 
 export interface Questionnaire {
   version: string;
+  /** Wording of the five scale_0_4 answer options (index = scale value). */
+  scaleLabels: string[];
   thresholds: {
     /** Category score (0-100) at or above which it counts as a strength. */
     strength: number;

@@ -25,6 +25,7 @@ const q = (partial: Partial<Question> & Pick<Question, "id" | "type" | "weight">
  */
 const fixture: Questionnaire = {
   version: "test-1",
+  scaleLabels: ["0", "1", "2", "3", "4"],
   thresholds: { strength: 75, weakness: 60 },
   categories: [
     {
@@ -173,6 +174,28 @@ describe("getProgress", () => {
 
   it("does not count unknown ids as progress", () => {
     expect(getProgress(fixture, { ghost: true }).answered).toBe(0);
+  });
+});
+
+describe("classifyCategories", () => {
+  it("classifies pre-computed scores without recomputing from answers", async () => {
+    const { classifyCategories } = await import("./index");
+    const scores = [
+      { id: "catA", label: "Category A", score: 75 },
+      { id: "catB", label: "Category B", score: 60 },
+      { id: "catC", label: "Category C", score: 59.9 },
+    ];
+    const r = classifyCategories(scores, { strength: 75, weakness: 60 });
+    expect(r.strengths.map((c) => c.id)).toEqual(["catA"]);
+    expect(r.weaknesses.map((c) => c.id)).toEqual(["catC"]);
+  });
+});
+
+describe("rankPriorityActions", () => {
+  it("ranks by impact without needing category scores", async () => {
+    const { rankPriorityActions } = await import("./index");
+    const actions = rankPriorityActions(fixture, completeAnswers, { maxActions: 2 });
+    expect(actions.map((a) => a.questionId)).toEqual(["q4", "q2"]);
   });
 });
 

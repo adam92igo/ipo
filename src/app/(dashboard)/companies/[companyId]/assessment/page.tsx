@@ -1,14 +1,23 @@
+import { notFound } from "next/navigation";
 import {
-  getAnswers,
-  getOrCreateActiveAssessment,
+  getActiveAssessment,
+  getAnswersFor,
 } from "@/lib/data-access/assessments";
 import { getCompany } from "@/lib/data-access/companies";
+import { NotFoundError } from "@/lib/data-access/errors";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
-import { getQuestionnaire } from "@/lib/questionnaire";
+import {
+  CURRENT_QUESTIONNAIRE_VERSION,
+  getQuestionnaire,
+} from "@/lib/questionnaire";
 import { AssessmentForm } from "./assessment-form";
 
 export const metadata = { title: "Readiness assessment" };
 
+/**
+ * Pure read — no row is created by rendering (link prefetches hit this).
+ * The assessment row is created by startAssessmentAction on the first answer.
+ */
 export default async function AssessmentPage({
   params,
 }: {
@@ -16,18 +25,26 @@ export default async function AssessmentPage({
 }) {
   const { companyId } = await params;
   const ctx = await requireOrgPageContext();
-  const company = await getCompany(ctx, companyId);
-  const assessment = await getOrCreateActiveAssessment(ctx, company.id);
-  const answers = await getAnswers(ctx, assessment.id);
-  const questionnaire = getQuestionnaire(assessment.questionnaireVersion);
 
-  return (
-    <AssessmentForm
-      assessmentId={assessment.id}
-      companyId={company.id}
-      companyName={company.name}
-      questionnaire={questionnaire}
-      initialAnswers={answers}
-    />
-  );
+  try {
+    const company = await getCompany(ctx, companyId);
+    const active = await getActiveAssessment(ctx, company.id);
+    const answers = active ? await getAnswersFor(ctx, active) : {};
+    const questionnaire = getQuestionnaire(
+      active?.questionnaireVersion ?? CURRENT_QUESTIONNAIRE_VERSION,
+    );
+
+    return (
+      <AssessmentForm
+        assessmentId={active?.id ?? null}
+        companyId={company.id}
+        companyName={company.name}
+        questionnaire={questionnaire}
+        initialAnswers={answers}
+      />
+    );
+  } catch (error) {
+    if (error instanceof NotFoundError) notFound();
+    throw error;
+  }
 }

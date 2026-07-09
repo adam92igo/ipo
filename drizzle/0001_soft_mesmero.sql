@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "assessment_active_company_uq" ON "assessment" USING btree ("company_id") WHERE "assessment"."status" = 'in_progress';

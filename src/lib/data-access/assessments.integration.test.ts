@@ -160,4 +160,32 @@ describe("assessments data-access", () => {
     expect(latestCompleted?.id).toBe(first.id);
     expect(latestCompleted?.status).toBe("completed");
   });
+
+  it("never creates two open assessments for one company under concurrency", async () => {
+    const { ctx, company } = await seedCompany();
+    const [a, b] = await Promise.all([
+      getOrCreateActiveAssessment(ctx, company.id),
+      getOrCreateActiveAssessment(ctx, company.id),
+    ]);
+    expect(a.id).toBe(b.id);
+  });
+
+  it("lets exactly one of two concurrent completions win", async () => {
+    const { ctx, company } = await seedCompany();
+    const assessment = await getOrCreateActiveAssessment(ctx, company.id);
+    for (const [questionId, value] of Object.entries(bestAnswers())) {
+      await saveAnswer(ctx, assessment.id, questionId, value);
+    }
+    const results = await Promise.allSettled([
+      completeAssessment(ctx, assessment.id),
+      completeAssessment(ctx, assessment.id),
+    ]);
+    const fulfilled = results.filter((r) => r.status === "fulfilled");
+    const rejected = results.filter(
+      (r): r is PromiseRejectedResult => r.status === "rejected",
+    );
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason).toBeInstanceOf(InvalidStateError);
+  });
 });

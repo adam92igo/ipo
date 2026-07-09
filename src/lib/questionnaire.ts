@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Questionnaire } from "@/engines/scoring/types";
+import type { Question, Questionnaire } from "@/engines/scoring/types";
 import questionnaireV1 from "../../config/questionnaire.v1.json";
 
 const choiceSchema = z.object({
@@ -24,6 +24,8 @@ const questionSchema = z
 export const questionnaireSchema = z
   .object({
     version: z.string().min(1),
+    /** Answer-option wording for scale_0_4 questions — versioned content. */
+    scaleLabels: z.array(z.string().min(1)).length(5),
     thresholds: z.object({
       strength: z.number().min(0).max(100),
       weakness: z.number().min(0).max(100),
@@ -56,9 +58,30 @@ const registry: Record<string, unknown> = {
 
 export const CURRENT_QUESTIONNAIRE_VERSION = "v1";
 
+// The registry entries are static imports, so each version is parsed once.
+const parsedCache = new Map<string, Questionnaire>();
+const questionIndexCache = new Map<string, Map<string, Question>>();
+
 /** Parses and validates a versioned questionnaire config. Throws on unknown version or invalid content. */
 export function getQuestionnaire(version: string): Questionnaire {
+  const cached = parsedCache.get(version);
+  if (cached) return cached;
   const raw = registry[version];
   if (!raw) throw new Error(`Unknown questionnaire version: ${version}`);
-  return questionnaireSchema.parse(raw) as Questionnaire;
+  const parsed = questionnaireSchema.parse(raw) as Questionnaire;
+  parsedCache.set(version, parsed);
+  return parsed;
+}
+
+/** O(1) question lookup by id for a given version. */
+export function getQuestionIndex(version: string): Map<string, Question> {
+  const cached = questionIndexCache.get(version);
+  if (cached) return cached;
+  const index = new Map(
+    getQuestionnaire(version).categories.flatMap((c) =>
+      c.questions.map((q) => [q.id, q] as const),
+    ),
+  );
+  questionIndexCache.set(version, index);
+  return index;
 }

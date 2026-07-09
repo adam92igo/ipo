@@ -2,20 +2,23 @@
 
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getProgress } from "@/engines/scoring";
 import type {
   AnswerValue,
   Answers,
   Question,
   Questionnaire,
 } from "@/engines/scoring/types";
-import { completeAssessmentAction, saveAnswerAction } from "./actions";
-
-const SCALE_LABELS = ["Not started", "Early stage", "Partial", "Advanced", "Fully in place"];
+import {
+  completeAssessmentAction,
+  saveAnswerAction,
+  startAssessmentAction,
+} from "./actions";
 
 function OptionButton({
   selected,
@@ -45,10 +48,12 @@ function OptionButton({
 
 function QuestionControl({
   question,
+  scaleLabels,
   value,
   onChange,
 }: {
   question: Question;
+  scaleLabels: string[];
   value: AnswerValue | undefined;
   onChange: (value: AnswerValue) => void;
 }) {
@@ -67,7 +72,7 @@ function QuestionControl({
   if (question.type === "scale_0_4") {
     return (
       <div className="flex flex-wrap gap-2">
-        {SCALE_LABELS.map((label, i) => (
+        {scaleLabels.map((label, i) => (
           <OptionButton key={i} selected={value === i} onClick={() => onChange(i)}>
             <span className="font-semibold">{i}</span>
             <span className="ml-1.5 text-xs opacity-80">{label}</span>
@@ -98,7 +103,8 @@ export function AssessmentForm({
   questionnaire,
   initialAnswers,
 }: {
-  assessmentId: string;
+  /** null until the first answer creates the row via startAssessmentAction. */
+  assessmentId: string | null;
   companyId: string;
   companyName: string;
   questionnaire: Questionnaire;
@@ -108,32 +114,71 @@ export function AssessmentForm({
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [step, setStep] = useState(0);
   const [completing, startCompleting] = useTransition();
+  // Memoized so N racing answers trigger exactly one create.
+  const assessmentIdPromise = useRef<Promise<string> | null>(
+    assessmentId ? Promise.resolve(assessmentId) : null,
+  );
 
   const category = questionnaire.categories[step];
   const isLastStep = step === questionnaire.categories.length - 1;
-  const total = useMemo(
-    () => questionnaire.categories.reduce((s, c) => s + c.questions.length, 0),
-    [questionnaire],
-  );
-  const answered = questionnaire.categories
-    .flatMap((c) => c.questions)
-    .filter((q) => q.id in answers).length;
+  // Same counting rule as the server-side completion gate (engine).
+  const { answered, total, byCategory } = getProgress(questionnaire, answers);
+  const answeredByCategory = new Map(byCategory.map((c) => [c.id, c.answered]));
+
+  function ensureAssessmentId(): Promise<string> {
+    if (!assessmentIdPromise.current) {
+      assessmentIdPromise.current = startAssessmentAction({ companyId }).then(
+        (result) => {
+          if (!result.ok || !result.assessmentId) {
+            assessmentIdPromise.current = null; // allow retry
+            throw new Error(result.error ?? "Could not start the assessment");
+          }
+          return result.assessmentId;
+        },
+      );
+    }
+    return assessmentIdPromise.current;
+  }
 
   function handleAnswer(questionId: string, value: AnswerValue) {
+    const previous = answers[questionId];
+    const hadPrevious = questionId in answers;
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    void saveAnswerAction({ assessmentId, questionId, value }).then((result) => {
-      if (!result.ok) toast.error(result.error ?? "Could not save the answer");
-    });
+
+    ensureAssessmentId()
+      .then((id) => saveAnswerAction({ assessmentId: id, questionId, value }))
+      .then((result) => {
+        if (!result.ok) throw new Error(result.error ?? "Could not save the answer");
+      })
+      .catch((error: unknown) => {
+        // Roll back the optimistic state so progress never overcounts.
+        setAnswers((prev) => {
+          const next = { ...prev };
+          if (hadPrevious) next[questionId] = previous;
+          else delete next[questionId];
+          return next;
+        });
+        toast.error(
+          error instanceof Error ? error.message : "Could not save the answer",
+        );
+      });
   }
 
   function handleComplete() {
     startCompleting(async () => {
-      const result = await completeAssessmentAction({ assessmentId, companyId });
-      if (!result.ok) {
-        toast.error(result.error ?? "Could not complete the assessment");
-        return;
+      try {
+        const id = await ensureAssessmentId();
+        const result = await completeAssessmentAction({ assessmentId: id });
+        if (!result.ok) {
+          toast.error(result.error ?? "Could not complete the assessment");
+          return;
+        }
+        router.push(`/companies/${companyId}/results`);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Could not complete the assessment",
+        );
       }
-      router.push(`/companies/${companyId}/results`);
     });
   }
 
@@ -168,7 +213,7 @@ export function AssessmentForm({
       {/* Step tabs */}
       <div className="flex flex-wrap gap-2">
         {questionnaire.categories.map((c, i) => {
-          const done = c.questions.every((q) => q.id in answers);
+          const done = answeredByCategory.get(c.id) === c.questions.length;
           return (
             <button
               key={c.id}
@@ -193,8 +238,8 @@ export function AssessmentForm({
           <div>
             <h2 className="text-xl font-bold text-primary">{category.label}</h2>
             <p className="text-sm text-muted-foreground">
-              {category.questions.filter((q) => q.id in answers).length} /{" "}
-              {category.questions.length} answered in this section
+              {answeredByCategory.get(category.id) ?? 0} / {category.questions.length}{" "}
+              answered in this section
             </p>
           </div>
           {category.questions.map((question, index) => (
@@ -207,6 +252,7 @@ export function AssessmentForm({
               </p>
               <QuestionControl
                 question={question}
+                scaleLabels={questionnaire.scaleLabels}
                 value={answers[question.id]}
                 onChange={(value) => handleAnswer(question.id, value)}
               />

@@ -1,6 +1,6 @@
 import { ArrowRight, CircleCheck, RotateCcw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ScoreGauge } from "@/components/charts/score-gauge";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buildRestitution } from "@/engines/scoring";
 import {
-  getAnswers,
+  classifyCategories,
+  rankPriorityActions,
+  type PriorityAction,
+} from "@/engines/scoring";
+import {
+  getAnswersFor,
   getLatestCompletedAssessment,
 } from "@/lib/data-access/assessments";
 import { getCompany } from "@/lib/data-access/companies";
+import { NotFoundError } from "@/lib/data-access/errors";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
 import { getQuestionnaire } from "@/lib/questionnaire";
 
@@ -30,27 +35,52 @@ export default async function ResultsPage({
 }) {
   const { companyId } = await params;
   const ctx = await requireOrgPageContext();
-  const company = await getCompany(ctx, companyId);
 
-  const assessment = await getLatestCompletedAssessment(ctx, company.id);
+  let company, assessment;
+  try {
+    [company, assessment] = await Promise.all([
+      getCompany(ctx, companyId),
+      getLatestCompletedAssessment(ctx, companyId),
+    ]);
+  } catch (error) {
+    if (error instanceof NotFoundError) notFound();
+    throw error;
+  }
   if (!assessment) {
-    redirect(`/companies/${company.id}/assessment`);
+    redirect(`/companies/${companyId}/assessment`);
   }
 
   const questionnaire = getQuestionnaire(assessment.questionnaireVersion);
-  const answers = await getAnswers(ctx, assessment.id);
-  const restitution = buildRestitution(questionnaire, answers);
 
+  // Single source of truth: classification runs on the scores FROZEN at
+  // completion, never on a recomputation against today's config.
   const categoryScores = assessment.categoryScores ?? {};
-  const radarData = questionnaire.categories.map((c) => ({
+  const frozenCategories = questionnaire.categories.map((c) => ({
+    id: c.id,
     label: c.label,
     score: categoryScores[c.id] ?? 0,
   }));
+  const { strengths, weaknesses } = classifyCategories(
+    frozenCategories,
+    questionnaire.thresholds,
+  );
+
+  // Priority actions need the raw answers + config; degrade gracefully if the
+  // stored answers no longer line up with the config content.
+  let priorityActions: PriorityAction[] | null = null;
+  try {
+    const answers = await getAnswersFor(ctx, assessment);
+    priorityActions = rankPriorityActions(questionnaire, answers);
+  } catch {
+    priorityActions = null;
+  }
+
+  const radarData = frozenCategories.map((c) => ({ label: c.label, score: c.score }));
   const global = Number(assessment.globalScore);
   const statusOf = (id: string): "strength" | "weakness" | null =>
-    restitution.strengths.some((s) => s.id === id)
+    strengths.some((s) => s.id === id)
       ? "strength"
-      : restitution.weaknesses.some((w) => w.id === id)
+      : weaknesses.some((w) => w.id === id)
         ? "weakness"
         : null;
   const categoryLabel = (id: string) =>
@@ -93,7 +123,8 @@ export default async function ResultsPage({
               <span className="text-3xl">%</span>
             </p>
             <p className="max-w-xs text-sm text-muted-foreground">
-              Weighted average of the five readiness categories below.
+              Weighted average of the {questionnaire.categories.length} readiness
+              categories below.
             </p>
           </CardContent>
         </Card>
@@ -134,12 +165,12 @@ export default async function ResultsPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {restitution.strengths.length === 0 && (
+            {strengths.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 No category reaches the strength threshold yet.
               </p>
             )}
-            {restitution.strengths.map((s) => (
+            {strengths.map((s) => (
               <div key={s.id} className="flex items-center justify-between rounded-sm bg-muted px-3 py-2">
                 <span className="text-sm font-semibold">{s.label}</span>
                 <span className="text-sm font-bold text-primary">{s.score}%</span>
@@ -154,12 +185,12 @@ export default async function ResultsPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {restitution.weaknesses.length === 0 && (
+            {weaknesses.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 No category falls below the weakness threshold.
               </p>
             )}
-            {restitution.weaknesses.map((w) => (
+            {weaknesses.map((w) => (
               <div key={w.id} className="flex items-center justify-between rounded-sm bg-muted px-3 py-2">
                 <span className="text-sm font-semibold">{w.label}</span>
                 <span className="text-sm font-bold text-destructive">{w.score}%</span>
@@ -178,21 +209,28 @@ export default async function ResultsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {restitution.priorityActions.map((action, i) => (
-            <div key={action.questionId} className="flex items-start gap-3 rounded-sm border px-4 py-3">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                {i + 1}
-              </span>
-              <p className="min-w-0 flex-1 font-medium">{action.actionLabel}</p>
-              <Badge variant="outline" className="uppercase">
-                {categoryLabel(action.categoryId)}
-              </Badge>
-            </div>
-          ))}
-          {restitution.priorityActions.length === 0 && (
+          {priorityActions === null ? (
+            <p className="text-sm text-muted-foreground">
+              Priority actions are unavailable for this assessment — the stored
+              answers no longer match the questionnaire content. The frozen scores
+              above remain valid.
+            </p>
+          ) : priorityActions.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Nothing to flag — every weighted question is fully satisfied.
             </p>
+          ) : (
+            priorityActions.map((action, i) => (
+              <div key={action.questionId} className="flex items-start gap-3 rounded-sm border px-4 py-3">
+                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {i + 1}
+                </span>
+                <p className="min-w-0 flex-1 font-medium">{action.actionLabel}</p>
+                <Badge variant="outline" className="uppercase">
+                  {categoryLabel(action.categoryId)}
+                </Badge>
+              </div>
+            ))
           )}
         </CardContent>
       </Card>
