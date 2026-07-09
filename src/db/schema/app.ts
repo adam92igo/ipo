@@ -183,5 +183,7 @@ export const roadmapItem = pgTable(
   (t) => [
     index("roadmap_org_idx").on(t.organizationId),
     index("roadmap_assessment_idx").on(t.assessmentId),
+    // One item per rule per assessment — makes concurrent regeneration safe.
+    uniqueIndex("roadmap_assessment_rule_uq").on(t.assessmentId, t.ruleId),
   ],
 );

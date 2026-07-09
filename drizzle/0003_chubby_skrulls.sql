@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "roadmap_assessment_rule_uq" ON "roadmap_item" USING btree ("assessment_id","rule_id");

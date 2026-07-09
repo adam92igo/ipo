@@ -35,13 +35,21 @@ export async function listRoadmapItems(
   ctx: OrgContext,
   assessmentId: string,
 ): Promise<RoadmapItem[]> {
-  await getScopedCompletedAssessment(ctx, assessmentId);
+  const scoped = await getScopedCompletedAssessment(ctx, assessmentId);
+  return listRoadmapItemsFor(ctx, scoped);
+}
+
+/** Like listRoadmapItems, for an assessment row the caller already verified. */
+export async function listRoadmapItemsFor(
+  ctx: OrgContext,
+  verified: Assessment,
+): Promise<RoadmapItem[]> {
   return db
     .select()
     .from(roadmapItem)
     .where(
       and(
-        eq(roadmapItem.assessmentId, assessmentId),
+        eq(roadmapItem.assessmentId, verified.id),
         eq(roadmapItem.organizationId, ctx.organizationId),
       ),
     )

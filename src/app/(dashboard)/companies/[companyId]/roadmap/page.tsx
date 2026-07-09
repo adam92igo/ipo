@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getLatestCompletedAssessment } from "@/lib/data-access/assessments";
 import { getCompany } from "@/lib/data-access/companies";
 import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
-import { listRoadmapItems } from "@/lib/data-access/roadmap";
+import { listRoadmapItemsFor } from "@/lib/data-access/roadmap";
 import { GenerateRoadmapButton, RoadmapItemCard } from "./roadmap-view";
 
 export const metadata = { title: "Roadmap" };
@@ -24,7 +24,7 @@ export default async function RoadmapPage({
       getLatestCompletedAssessment(ctx, companyId),
     ]),
   );
-  const items = assessment ? await listRoadmapItems(ctx, assessment.id) : [];
+  const items = assessment ? await listRoadmapItemsFor(ctx, assessment) : [];
   const doneCount = items.filter((i) => i.status === "done").length;
 
   return (
