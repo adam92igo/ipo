@@ -116,6 +116,29 @@ server action) surfaced in the UI the same way as any other AI error.
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle Kit migrations (never edit generated SQL by hand) |
 | `pnpm auth:schema` | Regenerate `src/db/schema/auth.ts` from the better-auth config |
 
+## CI
+
+Every push to `main` and every pull request runs `.github/workflows/ci.yml`:
+
+| Job | What it checks |
+| --- | --- |
+| `typecheck` | `tsc --noEmit` |
+| `lint` | ESLint |
+| `test` | Vitest (unit + integration, Postgres service container) |
+| `test-e2e` | Playwright smoke test (Postgres service container) |
+| `semgrep` | `p/javascript`, `p/typescript`, `p/owasp-top-ten` — **fails on any WARNING-or-above finding**. (`p/nextjs` is skipped: on Semgrep's free tier it currently ships zero rules.) |
+| `osv-scanner` | Scans `package.json` / `pnpm-lock.yaml` — **fails on any HIGH/CRITICAL (CVSS ≥ 7.0) known vulnerability** |
+
+A repository ruleset on `main` requires all six checks to pass before a pull
+request can be merged, and blocks force-pushes and branch deletion.
+
+Note on the Semgrep gate: Semgrep's own severity taxonomy on the free
+registry tier doesn't line up with what actually matters — real, high-impact
+findings (e.g. a hardcoded JWT secret) are commonly tagged `WARNING`, not
+`ERROR`, even though Semgrep's own CLI labels them "Blocking". An ERROR-only
+gate would rarely trigger in practice, so the CI gate fails on WARNING or
+above instead.
+
 ## Project structure
 
 ```

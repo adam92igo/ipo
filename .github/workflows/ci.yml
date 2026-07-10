@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ipo
+          POSTGRES_PASSWORD: ipo_ci_password
+          POSTGRES_DB: ipo_compass_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ipo -d ipo_compass_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://ipo:ipo_ci_password@localhost:5432/ipo_compass_test
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Ephemeral, CI-only signing key — never a real secret, generated fresh per run.
+      - run: echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - run: pnpm test
+
+  test-e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ipo
+          POSTGRES_PASSWORD: ipo_ci_password
+          POSTGRES_DB: ipo_compass_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ipo -d ipo_compass_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://ipo:ipo_ci_password@localhost:5432/ipo_compass_test
+      BETTER_AUTH_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - uses: actions/checkout@v4
+      # p/nextjs is excluded: on Semgrep's free tier it currently resolves to
+      # zero rules (Pro-only ruleset) — including it would look like coverage
+      # it doesn't provide. p/javascript and p/typescript already cover this
+      # codebase; p/owasp-top-ten adds the general web vulnerability classes.
+      #
+      # Gate is ERROR+WARNING, not ERROR-only: verified empirically that on
+      # the free registry tier, real vulnerabilities (e.g. the hardcoded-JWT
+      # -secret rule) are commonly tagged WARNING despite Semgrep's own CLI
+      # marking them "Blocking" — an ERROR-only gate would rarely trigger.
+      - name: run semgrep (fail on WARNING-or-above findings)
+        run: |
+          semgrep scan \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/owasp-top-ten \
+            --json --output=semgrep-results.json \
+            --severity ERROR --severity WARNING \
+            --error \
+            .
+      - name: upload findings
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+
+  osv-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run osv-scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=results.json
+            -r
+            ./
+      - name: fail only on high/critical (CVSS >= 7.0) vulnerabilities
+        run: |
+          if [ ! -f results.json ]; then
+            echo "osv-scanner did not produce results.json — treating as a scan failure"
+            exit 1
+          fi
+          HIGH_COUNT=$(jq '[.results[]?.packages[]?.groups[]?.max_severity
+            | select(. != "" and . != null) | tonumber? ]
+            | map(select(. >= 7.0)) | length' results.json)
+          echo "High/critical vulnerabilities: $HIGH_COUNT"
+          if [ "$HIGH_COUNT" -gt 0 ]; then
+            jq '[.results[]?.packages[] | select(any(.groups[]?.max_severity | select(. != "" and . != null) | tonumber?; . >= 7.0))]' results.json
+            exit 1
+          fi
