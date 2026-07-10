@@ -49,6 +49,11 @@ export const roadmapPriorityEnum = pgEnum("roadmap_priority", [
   "low",
 ]);
 
+export const aiUsageFeatureEnum = pgEnum("ai_usage_feature", [
+  "fill_profile",
+  "assistant_message",
+]);
+
 export const company = pgTable(
   "company",
   {
@@ -185,5 +190,21 @@ export const roadmapItem = pgTable(
     index("roadmap_assessment_idx").on(t.assessmentId),
     // One item per rule per assessment — makes concurrent regeneration safe.
     uniqueIndex("roadmap_assessment_rule_uq").on(t.assessmentId, t.ruleId),
+  ],
+);
+
+// One row per rate-limited AI call; the trailing window is summed at query
+// time (see src/lib/data-access/rate-limit.ts), never mutated in place.
+export const aiUsageEvent = pgTable(
+  "ai_usage_event",
+  {
+    id: id(),
+    organizationId: orgId(),
+    feature: aiUsageFeatureEnum("feature").notNull(),
+    amount: integer("amount").notNull().default(1),
+    occurredAt: timestamp("occurred_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("ai_usage_org_feature_idx").on(t.organizationId, t.feature, t.occurredAt),
   ],
 );

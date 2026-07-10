@@ -6,9 +6,11 @@ import {
   fillCompanyProfile,
   type ProfileFillResult,
 } from "@/lib/ai/profile-fill";
+import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { UnsafeUrlError } from "@/lib/ai/website";
 import { requireOrgContext } from "@/lib/data-access/context";
 import { actionErrorMessage } from "@/lib/data-access/action-errors";
+import { checkAndRecordAiUsage } from "@/lib/data-access/rate-limit";
 
 const fillInput = z.object({
   name: z.string().trim().min(2).max(200),
@@ -25,7 +27,13 @@ export async function fillCompanyProfileAction(input: {
   }
 
   try {
-    await requireOrgContext(); // authenticated org members only — costs API credits
+    const ctx = await requireOrgContext(); // authenticated org members only — costs API credits
+    await checkAndRecordAiUsage(ctx, {
+      feature: "fill_profile",
+      cost: 1,
+      now: new Date(),
+      ...AI_RATE_LIMITS.fillProfile,
+    });
     const result = await fillCompanyProfile({
       name: parsed.data.name,
       website: parsed.data.website || null,

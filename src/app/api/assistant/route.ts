@@ -1,9 +1,15 @@
 import { z } from "zod";
 import { buildAssistantSystemPrompt } from "@/lib/ai/assistant";
 import { AI_MODEL, getAnthropicClient, isAiConfigured } from "@/lib/ai/config";
+import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { getAssistantCompanyContext } from "@/lib/data-access/assistant-context";
 import { requireOrgContext } from "@/lib/data-access/context";
-import { NotFoundError, UnauthenticatedError } from "@/lib/data-access/errors";
+import {
+  NotFoundError,
+  RateLimitExceededError,
+  UnauthenticatedError,
+} from "@/lib/data-access/errors";
+import { checkAndRecordAiUsage } from "@/lib/data-access/rate-limit";
 
 const bodySchema = z.object({
   companyId: z.string().min(1).max(64).optional(),
@@ -19,13 +25,6 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (!isAiConfigured()) {
-    return Response.json(
-      { error: "AI assistant is not configured — set ANTHROPIC_API_KEY." },
-      { status: 503 },
-    );
-  }
-
   let ctx;
   try {
     ctx = await requireOrgContext();
@@ -39,6 +38,34 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  // Cost = number of user turns in this request, not a flat 1 per HTTP call —
+  // otherwise one oversized request could smuggle a whole long chat past the limit.
+  const cost = Math.max(1, parsed.data.messages.filter((m) => m.role === "user").length);
+  try {
+    await checkAndRecordAiUsage(ctx, {
+      feature: "assistant_message",
+      cost,
+      now: new Date(),
+      ...AI_RATE_LIMITS.assistantMessage,
+    });
+  } catch (error) {
+    if (error instanceof RateLimitExceededError) {
+      const retryAfterSeconds = Math.ceil(error.retryAfterMs / 1000);
+      return Response.json(
+        { error: "Your organization has reached its daily assistant message limit." },
+        { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+      );
+    }
+    throw error;
+  }
+
+  if (!isAiConfigured()) {
+    return Response.json(
+      { error: "AI assistant is not configured — set ANTHROPIC_API_KEY." },
+      { status: 503 },
+    );
   }
 
   let system: string;

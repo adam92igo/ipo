@@ -29,6 +29,13 @@
       "when": 1783602624952,
       "tag": "0003_chubby_skrulls",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783676511145,
+      "tag": "0004_bumpy_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

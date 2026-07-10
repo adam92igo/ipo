@@ -32,3 +32,13 @@ export class InvalidStateError extends Error {
     this.name = "InvalidStateError";
   }
 }
+
+export class RateLimitExceededError extends Error {
+  readonly retryAfterMs: number;
+
+  constructor(retryAfterMs: number) {
+    super("Rate limit exceeded");
+    this.name = "RateLimitExceededError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}

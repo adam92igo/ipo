@@ -83,6 +83,25 @@ PAPPERS_API_KEY=...          # optional — registry pre-fill only
 Without these keys the app runs normally; the AI Assistant page shows a setup
 notice and the "Fill with AI" button is hidden.
 
+### AI rate limits
+
+Both AI endpoints are rate-limited per organization (a sliding window over an
+event log in Postgres — see `src/lib/data-access/rate-limit.ts`), not per IP,
+so one member's usage counts against their whole organization and never
+affects other tenants. Defaults, overridable in `.env`:
+
+```bash
+RATE_LIMIT_FILL_PROFILE_PER_HOUR=10        # "Fill with AI" calls per organization per hour
+RATE_LIMIT_ASSISTANT_MESSAGES_PER_DAY=100  # assistant user-turns per organization per day
+```
+
+The assistant is metered by the number of user turns in each request, not by
+request count — a request that carries many turns costs proportionally more,
+so a single oversized call can't buy unlimited chat past the limit. Exceeding
+either limit returns an explicit error (HTTP 429 with a `Retry-After` header
+for the assistant API; a `{ ok: false, error }` result for the "Fill with AI"
+server action) surfaced in the UI the same way as any other AI error.
+
 ## Commands
 
 | Command | Purpose |
