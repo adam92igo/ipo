@@ -18,8 +18,10 @@ export default defineConfig({
   timeout: 120_000,
   // Default expect() timeout (5s) is too tight for a cold `next dev
   // --turbopack` compile on a first-hit route in CI — each first navigation
-  // to a not-yet-compiled route can itself take several seconds.
-  expect: { timeout: 15_000 },
+  // to a not-yet-compiled route can itself take several seconds. Observed a
+  // near-miss in CI at 15s on the results transition (compile + score/radar
+  // render + DB round trip stacked together), so 30s to have real headroom.
+  expect: { timeout: 30_000 },
   fullyParallel: false,
   workers: 1,
   reporter: "list",
