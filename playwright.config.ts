@@ -12,7 +12,10 @@ const PORT = 3100;
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 60_000,
+  // The full journey hits ~15 distinct routes; on a CI runner every one of
+  // them is a cold Turbopack compile (several seconds each, stacking up),
+  // whereas locally the dev server is already warm from prior runs.
+  timeout: 120_000,
   // Default expect() timeout (5s) is too tight for a cold `next dev
   // --turbopack` compile on a first-hit route in CI — each first navigation
   // to a not-yet-compiled route can itself take several seconds.
