@@ -1,11 +1,19 @@
 # IPO Compass
 
-IPO Compass is a SaaS platform that guides European SMEs through IPO readiness.
+IPO Compass is a SaaS platform that guides French SMEs through IPO readiness.
 It runs a weighted diagnostic questionnaire, computes a deterministic valuation
 (DCF, sector comparables, market multiples), derives a prioritised roadmap from
 the assessment results, and offers AI-assisted company profiling and an IPO
-process assistant. MVP scope: France-first content (Pappers company registry,
-Euronext Paris), English UI.
+process assistant.
+
+The product is **France-only by design**, not a placeholder for future
+countries: the questionnaire is built around Euronext Growth/Access admission
+rules, the registry lookup is Pappers (French SIREN), sector valuation ranges
+are French-market multiples, and the roadmap cites French regulations (Code de
+commerce, AMF). Supporting a second country would mean a second questionnaire,
+valuation reference set, registry integration and roadmap rule set — out of
+scope on purpose, to go deep on one market rather than shallow on many. UI
+copy is in English; amounts are in EUR.
 
 ## Modules
 
@@ -58,20 +66,34 @@ Euronext Paris), English UI.
 
 ## Getting started
 
-Prerequisites: Node 22.13+ (required by pnpm 11), pnpm, Docker.
+Prerequisites: Node 22.13+, Docker, and a GitHub account added as a
+collaborator on this repo (it's private — ask the repo owner for access
+before cloning).
 
 ```bash
-cp .env.example .env        # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
-docker compose up -d        # PostgreSQL 17 (+ a separate test database)
+git clone git@github.com:adam92igo/ipo.git
+cd ipo
+corepack enable              # lets pnpm auto-use the exact version pinned
+                              # in package.json's "packageManager" — no
+                              # separate pnpm install needed
+cp .env.example .env         # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+docker compose up -d         # PostgreSQL 17 (+ a separate test database)
 pnpm install
-pnpm db:migrate             # apply Drizzle migrations
-pnpm dev                    # http://localhost:3000
+pnpm db:migrate               # apply Drizzle migrations
+pnpm dev                      # http://localhost:3000
 ```
+
+If `pnpm install` fails immediately with an engine error, your Node version
+is too old (`node --version` — needs 22.13+); this project sets
+`engine-strict` on purpose so that fails loudly instead of surfacing as a
+confusing runtime error later.
 
 There is no seed script: this is a multi-tenant app where each user creates
 their own organization on first sign-in. Open `http://localhost:3000/sign-up`,
 create an account, create your organization on the onboarding screen, then add
-a company to unlock the assessment, valuation and roadmap modules.
+a company to unlock the assessment, valuation and roadmap modules. (Want
+realistic pre-filled data to click through instead? See "Demo environment"
+below.)
 
 To enable the AI modules, add to `.env` and restart the dev server:
 
@@ -101,6 +123,13 @@ so a single oversized call can't buy unlimited chat past the limit. Exceeding
 either limit returns an explicit error (HTTP 429 with a `Retry-After` header
 for the assistant API; a `{ ok: false, error }` result for the "Fill with AI"
 server action) surfaced in the UI the same way as any other AI error.
+
+### Contributing
+
+Direct pushes to `main` are blocked by a repository ruleset — work on a
+branch and open a pull request; all 6 CI checks (see below) must pass before
+it can be merged. See [CLAUDE.md](CLAUDE.md) for the full architecture and
+workflow conventions.
 
 ## Demo environment
 
