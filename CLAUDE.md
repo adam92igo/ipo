@@ -1,6 +1,8 @@
 # IPO Compass
 
-SaaS platform that guides European SMEs through IPO readiness: weighted diagnostic questionnaire, deterministic valuation (DCF, comparables, market multiples), rules-based roadmap, and AI-assisted company profiling. MVP scope: France-first content (Pappers registry, Euronext Paris), English UI.
+SaaS platform that guides French SMEs through IPO readiness: weighted diagnostic questionnaire, deterministic valuation (DCF, comparables, market multiples), rules-based roadmap, and AI-assisted company profiling. **France-only by design, not a temporary MVP limitation**: the questionnaire cites Euronext Growth/Access rules, the registry integration is Pappers (French SIREN lookup), sector valuation refs are French-market multiples, and the roadmap cites French regulations (Code de commerce, AMF). Supporting another country would mean a second questionnaire, a second set of valuation refs, a second registry integration and a second roadmap rule set — deliberately out of scope. English UI.
+
+New to the repo? See [README.md](README.md) for local setup (Docker, `.env`, migrations) — this file is architecture and process conventions, not a getting-started guide.
 
 ## Stack
 
@@ -44,4 +46,14 @@ SaaS platform that guides European SMEs through IPO readiness: weighted diagnost
 4. ✅ Roadmap (rules engine from assessment results)
 5. ✅ AI modules ("Fill with AI" from official website + Pappers only — no LinkedIn scraping; contextual IPO assistant). AI code lives in `src/lib/ai/`; degrades gracefully when `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are unset.
 
-Method going forward: one feature at a time; clean commit + code review, then push to origin/main (github.com/adam92igo/ipo, private).
+Post-MVP additions:
+
+- Per-organization rate limiting on both AI endpoints (sliding window, `src/lib/data-access/rate-limit.ts`).
+- CI (typecheck, lint, test, test:e2e, Semgrep, OSV-Scanner) + a branch ruleset on `main` — see "Workflow" below.
+- A disposable demo environment (`pnpm demo` / `pnpm demo:seed`) for investor/sales walkthroughs — see README.
+
+## Workflow
+
+- One feature at a time; clean commit(s) on a feature branch, open a PR (`gh pr create`), wait for the 6 required CI checks to pass, then merge (`gh pr merge --squash --delete-branch`).
+- **Direct pushes to `main` are blocked** by a repository ruleset (`required_status_checks`, no bypass) — this is enforced by GitHub, not just a convention. `git push origin main` from a local commit that never ran through CI will be rejected with `GH013: Repository rule violations`. Always branch + PR, even for a single-line fix.
+- Repo is private (github.com/adam92igo/ipo) — new collaborators need to be added on GitHub before they can push branches or open PRs.

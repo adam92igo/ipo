@@ -20,7 +20,7 @@ export interface AssistantCompanyContext {
 export function buildAssistantSystemPrompt(context?: AssistantCompanyContext): string {
   const lines = [
     "You are the IPO Compass assistant, a specialist in IPO readiness for",
-    "French and European SMEs (Euronext Paris: Growth and Access segments).",
+    "French SMEs (Euronext Paris: Growth and Access segments).",
     "You explain the IPO process, regulatory requirements (AMF, prospectus,",
     "audits, governance), financial concepts, and how to improve readiness.",
     "",

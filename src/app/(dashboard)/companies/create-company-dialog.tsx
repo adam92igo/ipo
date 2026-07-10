@@ -23,7 +23,6 @@ const initialState: CreateCompanyState = { ok: false };
 interface FormValues {
   name: string;
   sector: string;
-  country: string;
   siren: string;
   headcount: string;
   website: string;
@@ -32,7 +31,6 @@ interface FormValues {
 const emptyValues: FormValues = {
   name: "",
   sector: "",
-  country: "FR",
   siren: "",
   headcount: "",
   website: "",
@@ -162,30 +160,17 @@ function CompanyForm({
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="sector">Sector *</Label>
-          <Input
-            id="sector"
-            name="sector"
-            placeholder="Software"
-            value={values.sector}
-            onChange={set("sector")}
-            required
-          />
-          <FieldError errors={state.fieldErrors?.sector} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="country">Country (ISO code)</Label>
-          <Input
-            id="country"
-            name="country"
-            maxLength={2}
-            value={values.country}
-            onChange={set("country")}
-          />
-          <FieldError errors={state.fieldErrors?.country} />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="sector">Sector *</Label>
+        <Input
+          id="sector"
+          name="sector"
+          placeholder="Software"
+          value={values.sector}
+          onChange={set("sector")}
+          required
+        />
+        <FieldError errors={state.fieldErrors?.sector} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
