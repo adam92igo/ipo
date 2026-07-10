@@ -15,7 +15,10 @@ export default defineConfig({
   // The full journey hits ~15 distinct routes; on a CI runner every one of
   // them is a cold Turbopack compile (several seconds each, stacking up),
   // whereas locally the dev server is already warm from prior runs.
-  timeout: 120_000,
+  // Confirmed in CI logs: the run reached the very last page (/assistant)
+  // and was killed mid-assertion right at the 120s mark — the full cold
+  // journey genuinely takes close to that long, so 180s for real headroom.
+  timeout: 180_000,
   // Default expect() timeout (5s) is too tight for a cold `next dev
   // --turbopack` compile on a first-hit route in CI — each first navigation
   // to a not-yet-compiled route can itself take several seconds. Observed a
