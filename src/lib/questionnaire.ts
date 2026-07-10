@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Question, Questionnaire } from "@/engines/scoring/types";
 import questionnaireV1 from "../../config/questionnaire.v1.json";
+import questionnaireV2 from "../../config/questionnaire.v2.json";
 import { createVersionedConfig } from "./versioned-config";
 
 const choiceSchema = z.object({
@@ -17,6 +18,8 @@ const questionSchema = z
     weight: z.number().positive(),
     actionLabel: z.string().min(1).optional(),
     choices: z.array(choiceSchema).min(2).optional(),
+    /** Regulatory citation backing this question, when one applies. */
+    reference: z.string().min(1).optional(),
   })
   .refine((q) => (q.type === "single_choice") === (q.choices !== undefined), {
     message: "choices are required for single_choice questions and forbidden otherwise",
@@ -41,6 +44,16 @@ export const questionnaireSchema = z
         }),
       )
       .min(1),
+    /** Bibliography for the `reference` fields above. */
+    sources: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          url: z.string().min(1),
+          asOf: z.string().min(1),
+        }),
+      )
+      .optional(),
   })
   .refine((qn) => qn.thresholds.weakness <= qn.thresholds.strength, {
     message: "weakness threshold must not exceed strength threshold",
@@ -53,14 +66,14 @@ export const questionnaireSchema = z
     { message: "question ids must be unique across the questionnaire" },
   );
 
-export const CURRENT_QUESTIONNAIRE_VERSION = "v1";
+export const CURRENT_QUESTIONNAIRE_VERSION = "v2";
 
 const questionIndexCache = new Map<string, Map<string, Question>>();
 
 /** Parses and validates a versioned questionnaire config. Throws on unknown version or invalid content. */
 export const getQuestionnaire = createVersionedConfig<Questionnaire>(
   "questionnaire",
-  { v1: questionnaireV1 },
+  { v1: questionnaireV1, v2: questionnaireV2 },
   questionnaireSchema,
 );
 

@@ -5,7 +5,7 @@ import {
   getQuestionnaire,
 } from "./questionnaire";
 
-describe("questionnaire v1 config", () => {
+describe("questionnaire current config", () => {
   const questionnaire = getQuestionnaire(CURRENT_QUESTIONNAIRE_VERSION);
 
   it("has the five spec categories, weights summing to 100", () => {

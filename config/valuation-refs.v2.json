@@ -1,0 +1,99 @@
+{
+  "version": "v2",
+  "note": "Indicative reference ranges for French SMEs/mid-caps (Euronext Paris universe). Multiples are enterprise-value based; equity value = EV - net debt. Every sector entry documents its source, as-of date and confidence level — see also waccAssumptions for the shared WACC building blocks. These are DEFAULTS for a first estimate, not investment advice; low-confidence entries should be reviewed by a valuation professional before client-facing use.",
+  "discounting": {
+    "forecastYears": 5,
+    "terminalGrowth": 0.018
+  },
+  "growthClamp": { "min": 0, "max": 0.25 },
+  "waccAssumptions": {
+    "riskFreeRate": 0.038,
+    "equityRiskPremiumFrance": 0.0501,
+    "sizePremiumRange": { "low": 0.02, "high": 0.03 },
+    "source": "Risk-free: France 10Y OAT government bond yield, live snapshot ~3.8% (Investing.com, Jul 2026). Equity risk premium: Damodaran Country Default Spreads and Risk Premiums for France (Aa3 rating, total ERP 5.01%, table dated 5 Jan 2026, pages.stern.nyu.edu/~adamodar). Size premium: Sorgem Evaluation, 'La Prime de Taille' (2016), reviewing Duff & Phelps / CRSP decile studies and French expert-opinion precedents.",
+    "asOf": "2026-01 (ERP) / 2026-07 (risk-free snapshot)",
+    "confidence": "medium — risk-free rate and ERP are directly sourced and current; the size premium is a genuinely disputed range in the valuation literature and is a working assumption, low confidence, à valider par un expert. Per-sector WACC below is a derived synthesis of these building blocks plus a sector risk adjustment, not itself a single quoted figure."
+  },
+  "sectors": {
+    "software": {
+      "label": "Software & IT services",
+      "aliases": ["software", "saas", "it services", "tech", "digital", "informatique", "logiciel"],
+      "wacc": 0.12,
+      "evEbitda": { "low": 9, "mid": 13, "high": 16 },
+      "evRevenue": { "low": 1.5, "mid": 3, "high": 5 },
+      "source": "EV/EBITDA and EV/Revenue: Hectelion 'Valuation Multiples France/Switzerland 2026' (SaaS ~14x EBITDA, 3-8x Revenue), cross-checked as a ceiling against Damodaran Jan 2026 industry data (Software 24-30x, Computer Services 14.1x — large-cap, used for sanity-check only, not as the quoted range).",
+      "asOf": "2026-01",
+      "confidence": "medium — multiples come from a secondary aggregator rather than a dedicated French SME-only dataset; à valider par un expert avant utilisation en clientèle."
+    },
+    "industrials": {
+      "label": "Industrials & manufacturing",
+      "aliases": ["industrial", "manufacturing", "robotics", "machinery", "industrie", "engineering"],
+      "wacc": 0.10,
+      "evEbitda": { "low": 6, "mid": 8, "high": 10 },
+      "evRevenue": { "low": 0.6, "mid": 1.0, "high": 1.5 },
+      "source": "EV/EBITDA: Argos Index / Epsilon Research, eurozone unlisted mid-market median 8.3x EBITDA (Q4 2025), consistent with Damodaran Jan 2026 Machinery (16.2x, large-cap ceiling check). EV/Revenue range derived from the EBITDA range assuming a typical industrials EBITDA margin, not independently sourced.",
+      "asOf": "2025-Q4",
+      "confidence": "medium for EV/EBITDA (real recurring French index); low for EV/Revenue (derived, not directly sourced) — à valider par un expert."
+    },
+    "healthcare": {
+      "label": "Healthcare & life sciences",
+      "aliases": ["health", "medical", "pharma", "biotech", "santé", "medtech"],
+      "wacc": 0.12,
+      "evEbitda": { "low": 9, "mid": 12, "high": 16 },
+      "evRevenue": { "low": 1.5, "mid": 2.5, "high": 4 },
+      "source": "Hectelion 'Valuation Multiples France/Switzerland 2026' (Healthcare Products 10.5-19.8x), cross-checked against Damodaran Jan 2026 (Healthcare Products 19.8x, Pharma 15.3x, Biotech 15.8x — large-cap ceiling check). EV/Revenue range derived, not independently sourced.",
+      "asOf": "2026-01",
+      "confidence": "medium — secondary aggregator, not French-SME-specific; EV/Revenue is derived, à valider par un expert."
+    },
+    "consumer": {
+      "label": "Consumer goods & retail",
+      "aliases": ["consumer", "retail", "e-commerce", "distribution", "commerce", "luxury", "fashion"],
+      "wacc": 0.098,
+      "evEbitda": { "low": 6, "mid": 8, "high": 11 },
+      "evRevenue": { "low": 0.5, "mid": 0.9, "high": 1.4 },
+      "source": "Hectelion Consumer Discretionary mid-market reference (~10.8x), positioned against the Argos Index general mid-market median (8.3x, Q4 2025). No dedicated French SME source found for this sector specifically.",
+      "asOf": "2025-Q4 / 2026-01",
+      "confidence": "low, à valider par un expert — figures are order-of-magnitude plausible against the general mid-market median but not independently verified for consumer/retail specifically."
+    },
+    "food": {
+      "label": "Food & beverage",
+      "aliases": ["food", "beverage", "agro", "agriculture", "agroalimentaire"],
+      "wacc": 0.095,
+      "evEbitda": { "low": 6, "mid": 8, "high": 10 },
+      "evRevenue": { "low": 0.6, "mid": 1.0, "high": 1.5 },
+      "source": "Damodaran Jan 2026 Food Processing (10.0x) and Beverage-Alcoholic (8.6x), both close to the Argos Index general mid-market median (8.3x, Q4 2025) — a reasonable consistency check for a defensive, lower-growth sector. EV/Revenue range derived, not independently sourced.",
+      "asOf": "2026-01",
+      "confidence": "medium for EV/EBITDA; low for EV/Revenue (derived) — à valider par un expert."
+    },
+    "energy": {
+      "label": "Energy & environment",
+      "aliases": ["energy", "renewable", "cleantech", "environment", "énergie", "utilities"],
+      "wacc": 0.105,
+      "evEbitda": { "low": 6, "mid": 9, "high": 13 },
+      "evRevenue": { "low": 1.0, "mid": 1.8, "high": 2.8 },
+      "source": "Damodaran Jan 2026 shows this segment is highly heterogeneous: Oil & Gas Production 5.2x vs. Environmental & Waste Services 15.6x vs. Green/Renewable Energy 13.4x. No dedicated French SME source found; the range attempts to span traditional and renewable sub-segments.",
+      "asOf": "2026-01",
+      "confidence": "low, à valider par un expert — the sector spans fundamentally different risk profiles (fossil vs. renewable) that a single range cannot capture well."
+    },
+    "business-services": {
+      "label": "Business services",
+      "aliases": ["services", "consulting", "staffing", "conseil", "outsourcing", "bpo"],
+      "wacc": 0.105,
+      "evEbitda": { "low": 6, "mid": 8, "high": 11 },
+      "evRevenue": { "low": 0.8, "mid": 1.2, "high": 1.8 },
+      "source": "Damodaran Jan 2026 Business & Consumer Services (14.3x, large-cap ceiling check) and the Argos Index general mid-market median (8.3x, Q4 2025). No granular French SME source found beyond these general benchmarks.",
+      "asOf": "2026-01 / 2025-Q4",
+      "confidence": "low, à valider par un expert — largely unverified for this sector specifically."
+    },
+    "default": {
+      "label": "All sectors (default)",
+      "aliases": [],
+      "wacc": 0.11,
+      "evEbitda": { "low": 6, "mid": 8, "high": 10 },
+      "evRevenue": { "low": 0.8, "mid": 1.3, "high": 2.0 },
+      "source": "Anchored to the Argos Index / Epsilon Research eurozone unlisted mid-market median (8.3x EBITDA, Q4 2025), a real recurring French M&A benchmark used here as a sector-agnostic fallback.",
+      "asOf": "2025-Q4",
+      "confidence": "medium — reasonable generic fallback, not a substitute for a sector-specific figure."
+    }
+  }
+}

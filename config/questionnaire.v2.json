@@ -1,0 +1,191 @@
+{
+  "version": "v2",
+  "scaleLabels": ["Not started", "Early stage", "Partial", "Advanced", "Fully in place"],
+  "thresholds": { "strength": 75, "weakness": 60 },
+  "sources": [
+    { "label": "Euronext Growth Rule Book, Book I — Harmonised Rules (free float, track record, Listing Sponsor)", "url": "https://www.euronext.com/sites/default/files/2024-04/euronext_growth_harmonised_rulebook_i.pdf", "asOf": "2024-04" },
+    { "label": "Euronext Access Rule Book, Book I — Harmonised Rules (free float, track record)", "url": "https://www.euronext.com/sites/default/files/2024-04/euronext_access_harmonized_rulebook_i.pdf", "asOf": "2024-04" },
+    { "label": "Code de commerce, art. L. 227-2 (an SAS cannot make a public offer of securities)", "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006222614", "asOf": "in force" }
+  ],
+  "categories": [
+    {
+      "id": "governance",
+      "label": "Governance",
+      "weight": 25,
+      "questions": [
+        { "id": "gov-01", "text": "Does the company have a formal board of directors or supervisory board?", "type": "yes_no", "weight": 5, "actionLabel": "Establish a formal board of directors" },
+        { "id": "gov-02", "text": "What share of the board is made up of independent directors?", "type": "scale_0_4", "weight": 4, "actionLabel": "Recruit independent board members" },
+        { "id": "gov-03", "text": "Is an audit committee in place?", "type": "yes_no", "weight": 5, "actionLabel": "Set up an audit committee" },
+        { "id": "gov-04", "text": "Is a remuneration and nomination committee in place?", "type": "yes_no", "weight": 3, "actionLabel": "Create a remuneration and nomination committee" },
+        { "id": "gov-05", "text": "Does the board meet at least quarterly with formal minutes?", "type": "yes_no", "weight": 3, "actionLabel": "Formalise quarterly board meetings with minutes" },
+        { "id": "gov-06", "text": "Are the roles of chair and chief executive clearly separated, or is their combination formally justified?", "type": "yes_no", "weight": 2, "actionLabel": "Clarify the separation of chair and CEO roles" },
+        { "id": "gov-07", "text": "Is the cap table fully documented and up to date?", "type": "yes_no", "weight": 5, "actionLabel": "Consolidate and document the cap table" },
+        { "id": "gov-08", "text": "Is the shareholders' agreement compatible with a public listing?", "type": "single_choice", "weight": 4, "actionLabel": "Review the shareholders' agreement for listing compatibility", "choices": [
+          { "id": "reviewed_compatible", "label": "Reviewed and compatible with a listing", "value": 1 },
+          { "id": "no_agreement", "label": "No shareholders' agreement in place", "value": 0.4 },
+          { "id": "incompatible", "label": "Agreement contains clauses incompatible with a listing", "value": 0 }
+        ] },
+        { "id": "gov-09", "text": "Are stock option and free-share plans (BSPCE, AGA) fully documented?", "type": "yes_no", "weight": 2, "actionLabel": "Document all equity incentive plans" },
+        { "id": "gov-10", "text": "Is the corporate legal form compatible with a listing?", "type": "single_choice", "weight": 4, "actionLabel": "Convert to a listing-compatible legal form (SA)", "reference": "An SAS cannot make a public offer of securities (Code de commerce, art. L. 227-2); in practice, virtually all Euronext-listed issuers use the SA or SCA form.", "choices": [
+          { "id": "sa_sca", "label": "SA or SCA", "value": 1 },
+          { "id": "sas_convertible", "label": "SAS with a planned conversion", "value": 0.6 },
+          { "id": "other", "label": "Other form, conversion not assessed", "value": 0 }
+        ] },
+        { "id": "gov-11", "text": "Have the bylaws been reviewed by legal counsel in the last two years?", "type": "yes_no", "weight": 2, "actionLabel": "Have the bylaws reviewed by counsel" },
+        { "id": "gov-12", "text": "Are related-party transactions identified and documented?", "type": "yes_no", "weight": 4, "actionLabel": "Document related-party agreements" },
+        { "id": "gov-13", "text": "Does the board operate under a governance charter or internal rules?", "type": "yes_no", "weight": 3, "actionLabel": "Adopt a board governance charter" },
+        { "id": "gov-14", "text": "Is directors' and officers' (D&O) liability insurance in place?", "type": "yes_no", "weight": 2, "actionLabel": "Take out D&O insurance" },
+        { "id": "gov-15", "text": "How advanced is the succession plan for key executives?", "type": "scale_0_4", "weight": 2, "actionLabel": "Prepare a succession plan for key executives" },
+        { "id": "gov-16", "text": "Are delegations of authority formalised in writing?", "type": "yes_no", "weight": 3, "actionLabel": "Formalise delegations of authority" },
+        { "id": "gov-17", "text": "Are minority shareholders' rights identified and respected?", "type": "yes_no", "weight": 2, "actionLabel": "Map minority shareholders' rights" },
+        { "id": "gov-18", "text": "Is the group structure chart (subsidiaries and holdings) clear and documented?", "type": "yes_no", "weight": 3, "actionLabel": "Document the group structure chart" },
+        { "id": "gov-19", "text": "Is the company free of ongoing shareholder disputes?", "type": "yes_no", "weight": 4, "actionLabel": "Resolve pending shareholder disputes" },
+        { "id": "gov-20", "text": "Does the board receive monthly financial reporting?", "type": "yes_no", "weight": 3, "actionLabel": "Provide the board with monthly financial reporting" },
+        { "id": "gov-21", "text": "Has the company engaged its core listing team — a Euronext Listing Sponsor, and a lead manager / bookrunner bank for the offer?", "type": "yes_no", "weight": 4, "actionLabel": "Select and engage the core listing team", "reference": "A Listing Sponsor is mandatory for Euronext Growth admission and continuously for at least one year after listing; advisor appointment is the first step of Euronext's own IPO Journey (Euronext Growth Rule Book, Book I, Apr 2024; Euronext IPO Journey guide)." },
+        { "id": "gov-22", "text": "Can the company reach the minimum free float required for its target market (at least €2.5m of shares offered to the public for Euronext Growth; no fixed minimum on Euronext Access)?", "type": "single_choice", "weight": 4, "actionLabel": "Size the free float for the target market", "reference": "Euronext Growth requires at least €2.5m distributed to the public, with no percentage minimum; Euronext Access has no fixed free-float requirement (Euronext Growth/Access Rule Books, Book I, Apr 2024).", "choices": [
+          { "id": "exceeds", "label": "Comfortably exceeds the requirement for the target market", "value": 1 },
+          { "id": "meets", "label": "Meets the minimum but with limited headroom", "value": 0.7 },
+          { "id": "uncertain", "label": "Not yet modelled or uncertain", "value": 0.3 },
+          { "id": "below", "label": "Below the minimum for any target market", "value": 0 }
+        ] }
+      ]
+    },
+    {
+      "id": "finance",
+      "label": "Finance",
+      "weight": 25,
+      "questions": [
+        { "id": "fin-01", "text": "Is the required track record of annual financial statements available (2 fiscal years for Euronext Growth/Access, 3 for a regulated-market listing)?", "type": "yes_no", "weight": 5, "actionLabel": "Prepare the required track record of financial statements", "reference": "Euronext Growth and Euronext Access require 2 fiscal years of accounts; the regulated market (Euronext Paris) requires 3 (Euronext Growth/Access Rule Books, Book I, Apr 2024)." },
+        { "id": "fin-02", "text": "Are the statements prepared under a recognised framework (French GAAP or IFRS)?", "type": "yes_no", "weight": 4, "actionLabel": "Restate the accounts under a recognised framework" },
+        { "id": "fin-03", "text": "Where does the company stand on IFRS conversion?", "type": "single_choice", "weight": 4, "actionLabel": "Launch the IFRS conversion project", "choices": [
+          { "id": "completed", "label": "Conversion completed", "value": 1 },
+          { "id": "in_progress", "label": "Conversion in progress", "value": 0.6 },
+          { "id": "assessed", "label": "Impact assessed, not started", "value": 0.4 },
+          { "id": "not_started", "label": "Not started", "value": 0 }
+        ] },
+        { "id": "fin-04", "text": "How consistently has revenue grown over the last three years?", "type": "scale_0_4", "weight": 3 },
+        { "id": "fin-05", "text": "Is EBITDA positive?", "type": "yes_no", "weight": 4, "actionLabel": "Build a credible path to positive EBITDA" },
+        { "id": "fin-06", "text": "How does the EBITDA margin compare with the sector average?", "type": "scale_0_4", "weight": 3 },
+        { "id": "fin-07", "text": "Is there a reliable rolling cash forecast covering at least 12 months?", "type": "yes_no", "weight": 4, "actionLabel": "Implement a 12-month rolling cash forecast" },
+        { "id": "fin-08", "text": "Is net debt below three times EBITDA?", "type": "yes_no", "weight": 3, "actionLabel": "Deleverage below 3x net debt / EBITDA" },
+        { "id": "fin-09", "text": "Are debt covenants documented and monitored?", "type": "yes_no", "weight": 2, "actionLabel": "Set up covenant monitoring" },
+        { "id": "fin-10", "text": "Are working capital requirements modelled and monitored?", "type": "yes_no", "weight": 3, "actionLabel": "Model working capital requirements" },
+        { "id": "fin-11", "text": "Is budget-versus-actual variance tracked monthly?", "type": "yes_no", "weight": 4, "actionLabel": "Introduce monthly budget-versus-actual reporting" },
+        { "id": "fin-12", "text": "Is there a three-year business plan with financial projections?", "type": "yes_no", "weight": 5, "actionLabel": "Build a three-year business plan" },
+        { "id": "fin-13", "text": "Is the revenue recognition policy documented?", "type": "yes_no", "weight": 4, "actionLabel": "Document the revenue recognition policy" },
+        { "id": "fin-14", "text": "Are off-balance-sheet commitments inventoried?", "type": "yes_no", "weight": 3, "actionLabel": "Inventory off-balance-sheet commitments" },
+        { "id": "fin-15", "text": "If the company is a group, are consolidated accounts prepared?", "type": "yes_no", "weight": 4, "actionLabel": "Prepare consolidated accounts" },
+        { "id": "fin-16", "text": "How fast is the monthly accounting close?", "type": "scale_0_4", "weight": 3, "actionLabel": "Shorten the monthly close to under 15 days" },
+        { "id": "fin-17", "text": "Is the finance team sized for public-company reporting?", "type": "single_choice", "weight": 4, "actionLabel": "Strengthen the finance team ahead of listing", "choices": [
+          { "id": "full_team", "label": "CFO with a structured finance department", "value": 1 },
+          { "id": "cfo_small", "label": "CFO with a small team", "value": 0.7 },
+          { "id": "external", "label": "Part-time or external finance function", "value": 0.3 },
+          { "id": "none", "label": "No dedicated finance function", "value": 0 }
+        ] },
+        { "id": "fin-18", "text": "Has the tax position been reviewed with no material open disputes?", "type": "yes_no", "weight": 3, "actionLabel": "Complete a tax review" },
+        { "id": "fin-19", "text": "Are intercompany flows documented at arm's length?", "type": "yes_no", "weight": 2, "actionLabel": "Document intercompany flows at arm's length" },
+        { "id": "fin-20", "text": "Is the equity story quantified, including use of proceeds?", "type": "yes_no", "weight": 3, "actionLabel": "Draft a quantified equity story and use of proceeds" }
+      ]
+    },
+    {
+      "id": "growth",
+      "label": "Growth",
+      "weight": 15,
+      "questions": [
+        { "id": "gro-01", "text": "What is the company's current annual revenue?", "type": "single_choice", "weight": 3, "choices": [
+          { "id": "above_20m", "label": "Above €20m", "value": 1 },
+          { "id": "10_20m", "label": "€10m to €20m", "value": 0.8 },
+          { "id": "5_10m", "label": "€5m to €10m", "value": 0.5 },
+          { "id": "below_5m", "label": "Below €5m", "value": 0 }
+        ] },
+        { "id": "gro-02", "text": "How strong has revenue growth (CAGR) been over the last three years?", "type": "scale_0_4", "weight": 4 },
+        { "id": "gro-03", "text": "What share of revenue is recurring or repeat business?", "type": "scale_0_4", "weight": 3 },
+        { "id": "gro-04", "text": "Is there a documented market study (TAM / SAM / SOM)?", "type": "yes_no", "weight": 3, "actionLabel": "Commission a market sizing study" },
+        { "id": "gro-05", "text": "How concentrated is revenue on the top ten clients?", "type": "single_choice", "weight": 4, "actionLabel": "Reduce client concentration", "choices": [
+          { "id": "below_30", "label": "Below 30% of revenue", "value": 1 },
+          { "id": "30_50", "label": "Between 30% and 50%", "value": 0.5 },
+          { "id": "above_50", "label": "Above 50%", "value": 0 }
+        ] },
+        { "id": "gro-06", "text": "How diversified is revenue across geographies?", "type": "scale_0_4", "weight": 2 },
+        { "id": "gro-07", "text": "How diversified is the product or service portfolio?", "type": "scale_0_4", "weight": 2 },
+        { "id": "gro-08", "text": "Does the order pipeline or backlog give at least six months of visibility?", "type": "yes_no", "weight": 3, "actionLabel": "Build pipeline reporting with six-month visibility" },
+        { "id": "gro-09", "text": "Has the company demonstrated pricing power (price increases without churn)?", "type": "yes_no", "weight": 2 },
+        { "id": "gro-10", "text": "Is competitive positioning documented against named peers?", "type": "yes_no", "weight": 3, "actionLabel": "Document competitive positioning against named peers" },
+        { "id": "gro-11", "text": "Is the growth strategy formalised (organic and external)?", "type": "yes_no", "weight": 3, "actionLabel": "Formalise the growth strategy" },
+        { "id": "gro-12", "text": "How reliably were forecasts achieved over the last two budget cycles?", "type": "scale_0_4", "weight": 4, "actionLabel": "Improve forecast reliability" },
+        { "id": "gro-13", "text": "How scalable is the sales organisation beyond the founders?", "type": "scale_0_4", "weight": 3, "actionLabel": "Structure a sales organisation independent of the founders" },
+        { "id": "gro-14", "text": "Are churn and retention measured and at healthy levels?", "type": "yes_no", "weight": 3, "actionLabel": "Measure and improve client retention" },
+        { "id": "gro-15", "text": "Is there a funded R&D or innovation roadmap?", "type": "yes_no", "weight": 2 },
+        { "id": "gro-16", "text": "Is dependence on key suppliers identified and managed?", "type": "yes_no", "weight": 2, "actionLabel": "Mitigate key supplier dependencies" },
+        { "id": "gro-17", "text": "Are unit economics documented (CAC/LTV or unit margins)?", "type": "yes_no", "weight": 3, "actionLabel": "Document unit economics" },
+        { "id": "gro-18", "text": "Are barriers to entry identified (IP, contracts, network effects)?", "type": "yes_no", "weight": 2 },
+        { "id": "gro-19", "text": "Are acquisition targets or partnerships identified for the IPO proceeds?", "type": "yes_no", "weight": 1 },
+        { "id": "gro-20", "text": "Is the growth capital-expenditure plan quantified?", "type": "yes_no", "weight": 2, "actionLabel": "Quantify the growth capex plan" }
+      ]
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "weight": 20,
+      "questions": [
+        { "id": "com-01", "text": "Is a statutory auditor (commissaire aux comptes) appointed?", "type": "yes_no", "weight": 5, "actionLabel": "Appoint a statutory auditor" },
+        { "id": "com-02", "text": "What is the audit status of the required track record (2 fiscal years for Euronext Growth/Access, 3 for a regulated-market listing)?", "type": "single_choice", "weight": 5, "actionLabel": "Complete statutory audits of the accounts", "reference": "Euronext Growth and Euronext Access require 2 certified fiscal years; the regulated market requires 3 (Euronext Growth/Access Rule Books, Book I, Apr 2024).", "choices": [
+          { "id": "three_clean", "label": "Full required track record certified without reservation", "value": 1 },
+          { "id": "with_reservations", "label": "Certified with reservations", "value": 0.5 },
+          { "id": "less_than_three", "label": "Fewer years audited than required for the target market", "value": 0.3 },
+          { "id": "never", "label": "Accounts never audited", "value": 0 }
+        ] },
+        { "id": "com-03", "text": "How well documented are internal control procedures?", "type": "scale_0_4", "weight": 4, "actionLabel": "Document internal control procedures" },
+        { "id": "com-04", "text": "Is a risk map established and regularly updated?", "type": "yes_no", "weight": 4, "actionLabel": "Build a company risk map" },
+        { "id": "com-05", "text": "Is the GDPR register of processing activities in place?", "type": "yes_no", "weight": 4, "actionLabel": "Establish the GDPR processing register" },
+        { "id": "com-06", "text": "Is a DPO appointed or GDPR ownership clearly assigned?", "type": "yes_no", "weight": 2, "actionLabel": "Assign GDPR ownership or appoint a DPO" },
+        { "id": "com-07", "text": "Is an anti-corruption programme in place (Sapin II if in scope)?", "type": "yes_no", "weight": 3, "actionLabel": "Deploy an anti-corruption programme" },
+        { "id": "com-08", "text": "Are key contracts inventoried with change-of-control clauses reviewed?", "type": "yes_no", "weight": 3, "actionLabel": "Review change-of-control clauses in key contracts" },
+        { "id": "com-09", "text": "Is all intellectual property registered and owned by the company?", "type": "yes_no", "weight": 4, "actionLabel": "Secure ownership of intellectual property" },
+        { "id": "com-10", "text": "Is the litigation inventory clear of material disputes?", "type": "yes_no", "weight": 4, "actionLabel": "Resolve or provision material litigation" },
+        { "id": "com-11", "text": "Is employment compliance ensured (contracts, staff representation bodies)?", "type": "yes_no", "weight": 3, "actionLabel": "Bring employment matters into compliance" },
+        { "id": "com-12", "text": "Are all sector-specific licences and authorisations valid?", "type": "yes_no", "weight": 3 },
+        { "id": "com-13", "text": "Has the insurance programme been reviewed in the last two years?", "type": "yes_no", "weight": 2, "actionLabel": "Review the insurance programme" },
+        { "id": "com-14", "text": "How mature are the cybersecurity policy and incident response plan?", "type": "scale_0_4", "weight": 3, "actionLabel": "Formalise the cybersecurity policy" },
+        { "id": "com-15", "text": "Is a whistleblowing channel available?", "type": "yes_no", "weight": 2, "actionLabel": "Open a whistleblowing channel" },
+        { "id": "com-16", "text": "Has a code of ethics been distributed to employees?", "type": "yes_no", "weight": 2, "actionLabel": "Publish a code of ethics" },
+        { "id": "com-17", "text": "Are KYC/AML obligations covered, or confirmed not applicable?", "type": "yes_no", "weight": 1 },
+        { "id": "com-18", "text": "How far has the company assessed its CSRD / sustainability reporting obligations?", "type": "scale_0_4", "weight": 2, "actionLabel": "Assess CSRD reporting obligations" },
+        { "id": "com-19", "text": "Are data hosting contracts compliant with localisation requirements?", "type": "yes_no", "weight": 2 },
+        { "id": "com-20", "text": "Is compliance ownership identified at executive level?", "type": "yes_no", "weight": 3, "actionLabel": "Appoint an executive-level compliance owner" }
+      ]
+    },
+    {
+      "id": "reporting",
+      "label": "Reporting",
+      "weight": 15,
+      "questions": [
+        { "id": "rep-01", "text": "Is a monthly management reporting pack produced?", "type": "yes_no", "weight": 5, "actionLabel": "Set up a monthly management reporting pack" },
+        { "id": "rep-02", "text": "How well are KPIs defined for each business line?", "type": "scale_0_4", "weight": 4, "actionLabel": "Define KPIs for each business line" },
+        { "id": "rep-03", "text": "Are financial KPIs reconciled with the accounting records?", "type": "yes_no", "weight": 4, "actionLabel": "Reconcile KPIs with accounting records" },
+        { "id": "rep-04", "text": "How are management dashboards produced?", "type": "single_choice", "weight": 3, "actionLabel": "Automate dashboards in a BI tool", "choices": [
+          { "id": "automated", "label": "Automated in a BI tool", "value": 1 },
+          { "id": "semi", "label": "Partly automated", "value": 0.5 },
+          { "id": "manual", "label": "Manual spreadsheets", "value": 0.2 },
+          { "id": "none", "label": "No dashboards", "value": 0 }
+        ] },
+        { "id": "rep-05", "text": "Is there a single source of truth with clear data ownership?", "type": "yes_no", "weight": 3, "actionLabel": "Establish a single source of truth for data" },
+        { "id": "rep-06", "text": "Is there a reporting calendar with firm deadlines?", "type": "yes_no", "weight": 2, "actionLabel": "Publish an internal reporting calendar" },
+        { "id": "rep-07", "text": "How developed is non-financial (ESG) indicator tracking?", "type": "scale_0_4", "weight": 2 },
+        { "id": "rep-08", "text": "Can results be reported by segment (activity or geography)?", "type": "yes_no", "weight": 3, "actionLabel": "Enable segment-level reporting" },
+        { "id": "rep-09", "text": "Is there an audit trail from each KPI back to source data?", "type": "yes_no", "weight": 3, "actionLabel": "Build an audit trail from KPIs to source data" },
+        { "id": "rep-10", "text": "Is the forecast updated at least quarterly (reforecast)?", "type": "yes_no", "weight": 3, "actionLabel": "Introduce quarterly reforecasting" },
+        { "id": "rep-11", "text": "Is the board pack standardised from month to month?", "type": "yes_no", "weight": 2, "actionLabel": "Standardise the board pack" },
+        { "id": "rep-12", "text": "Does an investor-grade company presentation exist?", "type": "yes_no", "weight": 2, "actionLabel": "Prepare an investor-grade company presentation" },
+        { "id": "rep-13", "text": "Is there a documented accounting manual and closing procedures?", "type": "yes_no", "weight": 3, "actionLabel": "Write the group accounting manual" },
+        { "id": "rep-14", "text": "How scalable is the ERP / accounting system?", "type": "scale_0_4", "weight": 3, "actionLabel": "Upgrade the ERP or accounting system" },
+        { "id": "rep-15", "text": "Is at least three years of historical data accessible and consistent?", "type": "yes_no", "weight": 3, "actionLabel": "Consolidate three years of consistent historical data" },
+        { "id": "rep-16", "text": "How much experience does the company have with press or financial communication?", "type": "scale_0_4", "weight": 1 },
+        { "id": "rep-17", "text": "Is a corporate website with a financial section ready?", "type": "yes_no", "weight": 1, "actionLabel": "Prepare the corporate website's investor section" },
+        { "id": "rep-18", "text": "Were internal deadlines met for the last four closings?", "type": "scale_0_4", "weight": 3, "actionLabel": "Stabilise the closing timetable" },
+        { "id": "rep-19", "text": "Is reporting free of dependence on a single person?", "type": "yes_no", "weight": 2, "actionLabel": "Remove single-person dependencies in reporting" },
+        { "id": "rep-20", "text": "Is reporting aligned with the requirements of the target market (Euronext Growth / Access)?", "type": "yes_no", "weight": 3, "actionLabel": "Align reporting with target market requirements" }
+      ]
+    }
+  ]
+}

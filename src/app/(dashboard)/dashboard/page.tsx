@@ -17,7 +17,7 @@ const modules = [
   {
     title: "Readiness Assessment",
     description:
-      "100 weighted questions across Governance, Finance, Growth, Compliance and Reporting.",
+      "100+ weighted questions across Governance, Finance, Growth, Compliance and Reporting.",
     icon: ClipboardCheck,
     href: "/companies",
   },

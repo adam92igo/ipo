@@ -3,6 +3,7 @@ import {
   CURRENT_QUESTIONNAIRE_VERSION,
   getQuestionnaire,
 } from "../questionnaire";
+import { CURRENT_ROADMAP_RULES_VERSION } from "../roadmap-rules";
 import { migrateTestDb, seedOrgWithUser, truncateAll } from "../../test/db";
 import {
   completeAssessment,
@@ -66,7 +67,7 @@ describe("roadmap data-access", () => {
     expect(items.map((i) => i.ruleId)).toContain("r-audits");
     expect(items.map((i) => i.ruleId)).toContain("r-cac");
     expect(items[0].priority).toBe("critical");
-    expect(items[0].rulesVersion).toBe("v1");
+    expect(items[0].rulesVersion).toBe(CURRENT_ROADMAP_RULES_VERSION);
     expect(items[0].organizationId).toBe(ctx.organizationId);
     expect(items.map((i) => i.sortOrder)).toEqual(items.map((_, idx) => idx));
   });

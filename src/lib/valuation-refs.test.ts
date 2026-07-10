@@ -5,7 +5,7 @@ import {
   getValuationRefs,
 } from "./valuation-refs";
 
-describe("valuation refs v1 config", () => {
+describe("valuation refs current config", () => {
   const refs = getValuationRefs(CURRENT_VALUATION_REFS_VERSION);
 
   it("validates and exposes a default sector", () => {
@@ -27,7 +27,7 @@ describe("valuation refs v1 config", () => {
   });
 
   it("is memoized (same object identity across calls)", () => {
-    expect(getValuationRefs("v1")).toBe(refs);
+    expect(getValuationRefs(CURRENT_VALUATION_REFS_VERSION)).toBe(refs);
   });
 
   it("rejects unknown versions", () => {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { RoadmapRules } from "@/engines/roadmap/types";
 import roadmapRulesV1 from "../../config/roadmap-rules.v1.json";
+import roadmapRulesV2 from "../../config/roadmap-rules.v2.json";
 import { createVersionedConfig } from "./versioned-config";
 
 const triggerSchema = z.discriminatedUnion("type", [
@@ -30,6 +31,8 @@ export const roadmapRulesSchema = z
           priority: z.enum(["critical", "high", "medium", "low"]),
           estimatedWeeks: z.number().int().positive().max(200),
           trigger: triggerSchema,
+          /** Regulatory citation backing this rule, when one applies. */
+          reference: z.string().min(1).optional(),
         }),
       )
       .min(1),
@@ -42,10 +45,10 @@ export const roadmapRulesSchema = z
     { message: "rule ids must be unique" },
   );
 
-export const CURRENT_ROADMAP_RULES_VERSION = "v1";
+export const CURRENT_ROADMAP_RULES_VERSION = "v2";
 
 export const getRoadmapRules = createVersionedConfig<RoadmapRules>(
   "roadmap rules",
-  { v1: roadmapRulesV1 },
+  { v1: roadmapRulesV1, v2: roadmapRulesV2 },
   roadmapRulesSchema,
 );

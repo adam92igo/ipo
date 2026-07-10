@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NotApplicableError } from "@/engines/valuation";
+import { CURRENT_VALUATION_REFS_VERSION } from "../valuation-refs";
 import { migrateTestDb, seedOrgWithUser, truncateAll } from "../../test/db";
 import { createCompany } from "./companies";
 import { ForbiddenError, NotFoundError } from "./errors";
@@ -87,7 +88,7 @@ describe("financials + valuation data-access", () => {
 
     const run = await runValuation(ctx, company.id);
     expect(run.organizationId).toBe(ctx.organizationId);
-    expect(run.refsVersion).toBe("v1");
+    expect(run.refsVersion).toBe(CURRENT_VALUATION_REFS_VERSION);
 
     const results = run.results as {
       aggregated: { low: number; mid: number; high: number; methodsUsed: string[] };

@@ -5,7 +5,7 @@ import {
 } from "./questionnaire";
 import { CURRENT_ROADMAP_RULES_VERSION, getRoadmapRules } from "./roadmap-rules";
 
-describe("roadmap rules v1 config", () => {
+describe("roadmap rules current config", () => {
   const rules = getRoadmapRules(CURRENT_ROADMAP_RULES_VERSION);
   const questionnaire = getQuestionnaire(CURRENT_QUESTIONNAIRE_VERSION);
   const questionIds = new Set(
@@ -13,7 +13,7 @@ describe("roadmap rules v1 config", () => {
   );
   const categoryIds = new Set(questionnaire.categories.map((c) => c.id));
 
-  it("references only questions and categories that exist in questionnaire v1", () => {
+  it("references only questions and categories that exist in the current questionnaire", () => {
     for (const rule of rules.rules) {
       if (rule.trigger.type === "question") {
         expect(questionIds.has(rule.trigger.questionId), `rule ${rule.id}`).toBe(true);
