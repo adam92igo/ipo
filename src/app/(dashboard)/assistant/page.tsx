@@ -18,7 +18,7 @@ export default async function AssistantPage() {
         <SectionLabel>AI assistant</SectionLabel>
         <h1 className="text-3xl font-bold text-primary">IPO Assistant</h1>
         <p className="text-muted-foreground">
-          Answers about the IPO process, tailored to your companies&apos; readiness
+          Answers about the IPO process, tailored to your company&apos;s readiness
           data.
         </p>
       </div>

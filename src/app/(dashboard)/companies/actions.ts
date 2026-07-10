@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireOrgContext } from "@/lib/data-access/context";
 import { createCompany } from "@/lib/data-access/companies";
-import { ForbiddenError } from "@/lib/data-access/errors";
+import { CompanyAlreadyExistsError, ForbiddenError } from "@/lib/data-access/errors";
 import { companyInputSchema } from "@/lib/validation/company";
 
 export interface CreateCompanyState {
@@ -34,7 +34,10 @@ export async function createCompanyAction(
     await createCompany(ctx, parsed.data);
   } catch (error) {
     if (error instanceof ForbiddenError) {
-      return { ok: false, error: "Only owners and admins can add companies." };
+      return { ok: false, error: "Only owners and admins can add a company." };
+    }
+    if (error instanceof CompanyAlreadyExistsError) {
+      return { ok: false, error: "This organization already has a company." };
     }
     return { ok: false, error: "Something went wrong. Please try again." };
   }

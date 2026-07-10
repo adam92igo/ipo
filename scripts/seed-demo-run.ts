@@ -188,17 +188,16 @@ async function seedEarlyStageCompany(ctx: OrgContext, questionnaire: Questionnai
   console.log(`  assessment in progress (${Object.keys(answers).length} answers saved)`);
 }
 
-async function main(): Promise<void> {
-  const demoUrl = process.env.DEMO_DATABASE_URL!;
-  const demoEmail = process.env.DEMO_ACCOUNT_EMAIL!;
-
-  await ensureDemoDatabaseExists(demoUrl);
-  await migrate(db, { migrationsFolder: "./drizzle" });
-
-  const [demoUser] = await db.select().from(user).where(eq(user.email, demoEmail)).limit(1);
+/**
+ * Each demo login owns exactly one organization and one company — that's
+ * the real product's tenancy model, so the demo must show it faithfully
+ * rather than stacking several companies under one account.
+ */
+async function resolveDemoOrgContext(email: string): Promise<OrgContext> {
+  const [demoUser] = await db.select().from(user).where(eq(user.email, email)).limit(1);
   if (!demoUser) {
     throw new Error(
-      `No user found with email "${demoEmail}" in the demo database. Run \`pnpm demo\`, ` +
+      `No user found with email "${email}" in the demo database. Run \`pnpm demo\`, ` +
         `sign up at http://localhost:3200/sign-up with that email, and create your ` +
         `organization on the onboarding screen — then re-run this script.`,
     );
@@ -211,24 +210,42 @@ async function main(): Promise<void> {
     .limit(1);
   if (!membership || !isOrgRole(membership.role)) {
     throw new Error(
-      `"${demoEmail}" has no organization yet in the demo database. Create one on the ` +
+      `"${email}" has no organization yet in the demo database. Create one on the ` +
         `onboarding screen at http://localhost:3200/onboarding, then re-run this script.`,
     );
   }
 
-  const ctx: OrgContext = {
+  return {
     userId: demoUser.id,
     organizationId: membership.organizationId,
     role: membership.role,
   };
+}
 
-  console.log(`Resetting demo companies for organization ${ctx.organizationId}...`);
-  await db.delete(company).where(eq(company.organizationId, ctx.organizationId));
+async function main(): Promise<void> {
+  const demoUrl = process.env.DEMO_DATABASE_URL!;
+  const stages: Array<{
+    envVar: string;
+    seed: (ctx: OrgContext, questionnaire: Questionnaire) => Promise<void>;
+  }> = [
+    { envVar: "DEMO_ACCOUNT_EMAIL_READY", seed: seedReadyCompany },
+    { envVar: "DEMO_ACCOUNT_EMAIL_MID", seed: seedMidJourneyCompany },
+    { envVar: "DEMO_ACCOUNT_EMAIL_EARLY", seed: seedEarlyStageCompany },
+  ];
+
+  await ensureDemoDatabaseExists(demoUrl);
+  await migrate(db, { migrationsFolder: "./drizzle" });
 
   const questionnaire = getQuestionnaire(CURRENT_QUESTIONNAIRE_VERSION);
-  await seedReadyCompany(ctx, questionnaire);
-  await seedMidJourneyCompany(ctx, questionnaire);
-  await seedEarlyStageCompany(ctx, questionnaire);
+  for (const stage of stages) {
+    const email = process.env[stage.envVar];
+    if (!email) throw new Error(`${stage.envVar} is not set (see .env.example)`);
+
+    const ctx = await resolveDemoOrgContext(email);
+    console.log(`Resetting demo company for organization ${ctx.organizationId} (${email})...`);
+    await db.delete(company).where(eq(company.organizationId, ctx.organizationId));
+    await stage.seed(ctx, questionnaire);
+  }
 
   console.log("Demo data ready.");
 }

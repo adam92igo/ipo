@@ -65,7 +65,7 @@ export default function OnboardingPage() {
             Create your organization
           </CardTitle>
           <CardDescription>
-            Your organization is your private workspace. You can add the companies
+            Your organization is your private workspace. You can add the company
             you manage and invite teammates later.
           </CardDescription>
         </CardHeader>

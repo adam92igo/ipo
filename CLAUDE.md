@@ -8,7 +8,7 @@ New to the repo? See [README.md](README.md) for local setup (Docker, `.env`, mig
 
 - Next.js 15 (App Router) + TypeScript + Tailwind v4 + shadcn/ui (`src/components/ui`)
 - PostgreSQL 17 (local via `docker compose up -d`) + Drizzle ORM (node-postgres)
-- better-auth with the `organization` plugin — multi-tenant: one organization owns N companies, roles `owner` / `admin` / `member`
+- better-auth with the `organization` plugin — multi-tenant: one organization owns exactly one company (`company_org_uq`), roles `owner` / `admin` / `member`
 - Anthropic API (claude-sonnet) for AI modules ONLY (module 5) — never inside scoring, valuation, or roadmap engines
 - Vitest for tests
 
@@ -51,6 +51,7 @@ Post-MVP additions:
 - Per-organization rate limiting on both AI endpoints (sliding window, `src/lib/data-access/rate-limit.ts`).
 - CI (typecheck, lint, test, test:e2e, Semgrep, OSV-Scanner) + a branch ruleset on `main` — see "Workflow" below.
 - A disposable demo environment (`pnpm demo` / `pnpm demo:seed`) for investor/sales walkthroughs — see README.
+- Tenancy narrowed from "one organization owns N companies" to exactly one: the target user is a single company's CEO/CFO, not a multi-client advisory firm — `createCompany` enforces it (`company_org_uq` + `CompanyAlreadyExistsError`).
 
 ## Workflow
 

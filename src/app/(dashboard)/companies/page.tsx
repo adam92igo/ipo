@@ -13,7 +13,7 @@ import { requireOrgPageContext } from "@/lib/data-access/page-context";
 import { isAiConfigured } from "@/lib/ai/config";
 import { CreateCompanyDialog } from "./create-company-dialog";
 
-export const metadata = { title: "Companies" };
+export const metadata = { title: "Company" };
 
 export default async function CompaniesPage() {
   const ctx = await requireOrgPageContext();
@@ -24,38 +24,39 @@ export default async function CompaniesPage() {
   ]);
   const canWrite = ctx.role === "owner" || ctx.role === "admin";
   const aiConfigured = isAiConfigured();
+  const hasCompany = companies.length > 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <SectionLabel>Companies</SectionLabel>
-          <h1 className="text-3xl font-bold text-primary">Companies</h1>
+          <SectionLabel>Company</SectionLabel>
+          <h1 className="text-3xl font-bold text-primary">Company</h1>
           <p className="text-muted-foreground">
-            The companies this workspace is preparing for the public markets.
+            The company this workspace is preparing for the public markets.
           </p>
         </div>
-        {canWrite && <CreateCompanyDialog aiEnabled={aiConfigured} />}
+        {canWrite && !hasCompany && <CreateCompanyDialog aiEnabled={aiConfigured} />}
       </div>
 
-      {companies.length === 0 ? (
+      {!hasCompany ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
             <div className="flex size-14 items-center justify-center rounded-full bg-muted">
               <Building2 className="size-6 text-primary" />
             </div>
             <div className="space-y-1">
-              <p className="font-semibold text-primary">No companies yet</p>
+              <p className="font-semibold text-primary">No company yet</p>
               <p className="max-w-sm text-sm text-muted-foreground">
-                Add the first company to unlock the readiness assessment, valuation
-                and roadmap modules.
+                Add your company to unlock the readiness assessment, valuation and
+                roadmap modules.
               </p>
             </div>
             {canWrite && <CreateCompanyDialog aiEnabled={aiConfigured} />}
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           {companies.map((company) => {
             const latest = latestAssessments.get(company.id);
             const completed = completedAssessments.get(company.id);

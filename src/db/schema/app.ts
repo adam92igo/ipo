@@ -70,7 +70,10 @@ export const company = pgTable(
     }),
     ...timestamps,
   },
-  (t) => [index("company_org_idx").on(t.organizationId)],
+  // At most one company per organization — enforced here, not just in
+  // application code, so a race between two concurrent creates can't slip
+  // a second row past the check.
+  (t) => [uniqueIndex("company_org_uq").on(t.organizationId)],
 );
 
 // One row per fiscal year; valuation needs >= 3 years of history.

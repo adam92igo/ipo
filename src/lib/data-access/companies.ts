@@ -2,11 +2,12 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { company } from "../../db/schema";
 import type { CompanyInput } from "../validation/company";
-import { NotFoundError } from "./errors";
+import { CompanyAlreadyExistsError, NotFoundError } from "./errors";
 import { assertRole, type OrgContext } from "./org-context";
 
 export type Company = typeof company.$inferSelect;
 
+/** An organization has at most one company — this is always a 0- or 1-element list. */
 export async function listCompanies(ctx: OrgContext): Promise<Company[]> {
   return db
     .select()
@@ -25,6 +26,10 @@ export async function getCompany(ctx: OrgContext, companyId: string): Promise<Co
   return rows[0];
 }
 
+/**
+ * One company per organization — an org that already has one loses the race
+ * to company_org_uq instead of silently creating a second row.
+ */
 export async function createCompany(ctx: OrgContext, input: CompanyInput): Promise<Company> {
   assertRole(ctx, ["owner", "admin"]);
   const [created] = await db
@@ -39,7 +44,9 @@ export async function createCompany(ctx: OrgContext, input: CompanyInput): Promi
       siren: input.siren || null,
       headcount: input.headcount ?? null,
     })
+    .onConflictDoNothing({ target: company.organizationId })
     .returning();
+  if (!created) throw new CompanyAlreadyExistsError();
   return created;
 }
 
