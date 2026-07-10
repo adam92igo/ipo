@@ -7,7 +7,7 @@ import {
   listCompanies,
   updateCompany,
 } from "./companies";
-import { ForbiddenError, NotFoundError } from "./errors";
+import { CompanyAlreadyExistsError, ForbiddenError, NotFoundError } from "./errors";
 
 const baseInput = {
   name: "Acme SAS",
@@ -86,5 +86,43 @@ describe("companies data-access (tenant isolation)", () => {
     await expect(deleteCompany(adminCtx, created.id)).rejects.toThrow(ForbiddenError);
     await expect(deleteCompany(owner, created.id)).resolves.toBeUndefined();
     await expect(getCompany(owner, created.id)).rejects.toThrow(NotFoundError);
+  });
+
+  it("refuses a second company for the same organization", async () => {
+    const ctx = await seedOrgWithUser("owner");
+    await createCompany(ctx, baseInput);
+
+    await expect(
+      createCompany(ctx, { ...baseInput, name: "Second Co" }),
+    ).rejects.toThrow(CompanyAlreadyExistsError);
+    await expect(listCompanies(ctx)).resolves.toHaveLength(1);
+  });
+
+  it("lets a different organization create its own company unaffected", async () => {
+    const ctxA = await seedOrgWithUser("owner");
+    const ctxB = await seedOrgWithUser("owner");
+    await createCompany(ctxA, baseInput);
+
+    await expect(createCompany(ctxB, baseInput)).resolves.toMatchObject({
+      organizationId: ctxB.organizationId,
+    });
+  });
+
+  it("serializes concurrent creates for the same organization to exactly one winner", async () => {
+    const ctx = await seedOrgWithUser("owner");
+
+    const results = await Promise.allSettled([
+      createCompany(ctx, { ...baseInput, name: "First" }),
+      createCompany(ctx, { ...baseInput, name: "Second" }),
+    ]);
+
+    const fulfilled = results.filter((r) => r.status === "fulfilled");
+    const rejected = results.filter((r) => r.status === "rejected");
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+      CompanyAlreadyExistsError,
+    );
+    await expect(listCompanies(ctx)).resolves.toHaveLength(1);
   });
 });

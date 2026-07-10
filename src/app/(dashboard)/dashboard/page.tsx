@@ -35,7 +35,7 @@ const modules = [
   },
   {
     title: "AI Assistant",
-    description: "IPO process answers, aware of your companies' readiness data.",
+    description: "IPO process answers, aware of your company's readiness data.",
     icon: Sparkles,
     href: "/assistant",
   },
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
           {ctx.organizationName}
         </h1>
         <p className="text-muted-foreground">
-          Your IPO readiness workspace. Start by adding the companies you manage.
+          Your IPO readiness workspace. Start by adding the company you manage.
         </p>
       </div>
 
@@ -64,17 +64,15 @@ export default async function DashboardPage() {
               <Building2 className="size-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-primary">Companies</CardTitle>
+              <CardTitle className="text-primary">Company</CardTitle>
               <CardDescription>
-                {companies.length === 0
-                  ? "No companies yet"
-                  : `${companies.length} compan${companies.length > 1 ? "ies" : "y"} in this workspace`}
+                {companies.length === 0 ? "No company yet" : companies[0].name}
               </CardDescription>
             </div>
           </div>
           <Button asChild>
             <Link href="/companies">
-              {companies.length === 0 ? "Add a company" : "Manage"}
+              {companies.length === 0 ? "Add a company" : "View"}
             </Link>
           </Button>
         </CardHeader>

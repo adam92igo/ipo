@@ -33,6 +33,13 @@ export class InvalidStateError extends Error {
   }
 }
 
+export class CompanyAlreadyExistsError extends Error {
+  constructor() {
+    super("This organization already has a company");
+    this.name = "CompanyAlreadyExistsError";
+  }
+}
+
 export class RateLimitExceededError extends Error {
   readonly retryAfterMs: number;
 

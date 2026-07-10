@@ -137,32 +137,51 @@ A separate, disposable environment for showing the product (investors, sales)
 without touching your dev data: its own database (`ipo_compass_demo`) and its
 own port (`3200`), so it can run alongside `pnpm dev` without conflicting.
 
+Each organization owns exactly one company — that's the real product's
+tenancy model (see "Non-negotiable invariants" in [CLAUDE.md](CLAUDE.md)) — so
+the demo uses **3 separate logins**, one per readiness stage, rather than one
+account managing several companies:
+
+| Login | Company | Stage |
+|---|---|---|
+| `demo-ready@ipocompass.local` | Solstice Technologies SAS (Software) | Investment-ready (~97%) |
+| `demo-progress@ipocompass.local` | Ardennes Composites SAS (Industrials) | Mid-journey (~49%) |
+| `demo-early@ipocompass.local` | Bellevue Retail SAS (Consumer Retail) | Just started (assessment in progress) |
+
 One-time setup:
 
 ```bash
 # 1. Add to .env:
 DEMO_DATABASE_URL=postgresql://ipo:ipo_dev_password@localhost:5432/ipo_compass_demo
-DEMO_ACCOUNT_EMAIL=demo@ipocompass.local   # the email you'll sign up with below
+DEMO_ACCOUNT_EMAIL_READY=demo-ready@ipocompass.local
+DEMO_ACCOUNT_EMAIL_MID=demo-progress@ipocompass.local
+DEMO_ACCOUNT_EMAIL_EARLY=demo-early@ipocompass.local
 
 # 2. Start the demo server (creates + migrates the demo database on first run)
 pnpm demo
 
-# 3. Open http://localhost:3200/sign-up, sign up with DEMO_ACCOUNT_EMAIL, and
-#    create an organization on the onboarding screen.
+# 3. Open http://localhost:3200/sign-up and sign up 3 times, once per email
+#    above, creating an organization on the onboarding screen each time (use
+#    the same password for all 3 if you want one to remember for the pitch).
 
-# 4. Populate it with 3 fictional companies at different readiness stages
+# 4. Populate the 3 organizations with their fictional company
 pnpm demo:seed
 ```
 
-`pnpm demo:seed` is idempotent: it wipes and recreates the seeded companies
-every time (never the account or organization), so before a pitch just run
-it again to reset to a pristine state. It reuses the real scoring, valuation
-and roadmap engines — nothing is hand-fabricated, so the numbers you see are
-exactly what those engines compute for the seeded answers/financials. The
-demo server also raises the AI rate limits (see above) so a live walkthrough
-can't accidentally trip them, and shares whatever `ANTHROPIC_API_KEY` /
-`PAPPERS_API_KEY` are in `.env` — set them if you want to demo the AI modules
-live, or leave them unset to show the degraded-mode banner instead.
+`pnpm demo:seed` is idempotent: it wipes and recreates each organization's
+seeded company every time (never the accounts or organizations), so before a
+pitch just run it again to reset to a pristine state. It reuses the real
+scoring, valuation and roadmap engines — nothing is hand-fabricated, so the
+numbers you see are exactly what those engines compute for the seeded
+answers/financials. The demo server also raises the AI rate limits (see
+above) so a live walkthrough can't accidentally trip them, and shares
+whatever `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are in `.env` — set them if
+you want to demo the AI modules live, or leave them unset to show the
+degraded-mode banner instead.
+
+During a pitch, log out and back in between companies to move from stage to
+stage — that's the same flow a prospect goes through, which makes it a more
+honest demo than one account switching between several companies.
 
 ## Commands
 
