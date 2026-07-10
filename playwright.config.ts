@@ -13,6 +13,10 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
+  // Default expect() timeout (5s) is too tight for a cold `next dev
+  // --turbopack` compile on a first-hit route in CI — each first navigation
+  // to a not-yet-compiled route can itself take several seconds.
+  expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,
   reporter: "list",
@@ -27,6 +31,8 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: false,
     timeout: 60_000,
+    stdout: "pipe",
+    stderr: "pipe",
     env: {
       // The E2E server runs against the test database, never the dev one,
       // and AI keys are forced empty so the assistant page renders in its
