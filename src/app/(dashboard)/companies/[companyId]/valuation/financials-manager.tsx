@@ -99,11 +99,7 @@ function YearForm({
         Amounts in euros. At least one metric is required; three years of history
         give the most reliable valuation.
       </p>
-      <Button
-        type="submit"
-        disabled={pending || duplicate}
-        className="w-full uppercase tracking-[0.15em]"
-      >
+      <Button type="submit" disabled={pending || duplicate} className="w-full">
         {pending ? "Saving…" : "Save year"}
       </Button>
     </form>
@@ -221,11 +217,7 @@ export function FinancialsManager({
           }}
         >
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="uppercase tracking-[0.15em]"
-              onClick={() => setEditing(null)}
-            >
+            <Button variant="outline" onClick={() => setEditing(null)}>
               <Plus data-slot="icon" /> Add fiscal year
             </Button>
           </DialogTrigger>

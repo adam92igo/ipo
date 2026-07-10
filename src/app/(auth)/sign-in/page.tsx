@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,10 +34,8 @@ export default function SignInPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Welcome back/
-        </p>
-        <h1 className="text-3xl font-extrabold text-primary">Sign in</h1>
+        <SectionLabel>Welcome back</SectionLabel>
+        <h1 className="text-3xl font-bold text-primary">Sign in</h1>
         <p className="text-sm text-muted-foreground">
           Access your organization&apos;s IPO readiness workspace.
         </p>
@@ -63,20 +62,13 @@ export default function SignInPage() {
             required
           />
         </div>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="w-full uppercase tracking-[0.15em]"
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
       <p className="text-sm text-muted-foreground">
         No account yet?{" "}
-        <Link
-          href="/sign-up"
-          className="font-semibold text-primary hover:text-secondary"
-        >
+        <Link href="/sign-up" className="font-semibold text-primary hover:underline">
           Create one
         </Link>
       </p>

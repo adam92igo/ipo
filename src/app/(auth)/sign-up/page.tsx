@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,10 +36,8 @@ export default function SignUpPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Get started/
-        </p>
-        <h1 className="text-3xl font-extrabold text-primary">Create your account</h1>
+        <SectionLabel>Get started</SectionLabel>
+        <h1 className="text-3xl font-bold text-primary">Create your account</h1>
         <p className="text-sm text-muted-foreground">
           Then set up your organization&apos;s workspace.
         </p>
@@ -71,20 +70,13 @@ export default function SignUpPage() {
           />
           <p className="text-xs text-muted-foreground">At least 10 characters.</p>
         </div>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="w-full uppercase tracking-[0.15em]"
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Creating account…" : "Create account"}
         </Button>
       </form>
       <p className="text-sm text-muted-foreground">
         Already registered?{" "}
-        <Link
-          href="/sign-in"
-          className="font-semibold text-primary hover:text-secondary"
-        >
+        <Link href="/sign-in" className="font-semibold text-primary hover:underline">
           Sign in
         </Link>
       </p>

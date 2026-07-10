@@ -1,5 +1,6 @@
 import { Building2, ClipboardCheck, Gauge } from "lucide-react";
 import Link from "next/link";
+import { SectionLabel } from "@/components/section-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,10 +29,8 @@ export default async function CompaniesPage() {
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-sm uppercase italic tracking-wider text-secondary">
-            /Companies/
-          </p>
-          <h1 className="text-3xl font-extrabold text-primary">Companies</h1>
+          <SectionLabel>Companies</SectionLabel>
+          <h1 className="text-3xl font-bold text-primary">Companies</h1>
           <p className="text-muted-foreground">
             The companies this workspace is preparing for the public markets.
           </p>
@@ -75,7 +74,7 @@ export default async function CompaniesPage() {
                           href={company.website}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-sm text-primary underline-offset-4 hover:text-secondary hover:underline"
+                          className="text-sm text-primary underline-offset-4 hover:underline"
                         >
                           {company.website}
                         </a>
@@ -103,20 +102,20 @@ export default async function CompaniesPage() {
                       </span>
                     )}
                     <div className="flex gap-2">
-                      <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                      <Button asChild size="sm" variant="outline">
                         <Link href={`/companies/${company.id}/valuation`}>Valuation</Link>
                       </Button>
                       {completed && (
                         <>
-                          <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                          <Button asChild size="sm" variant="outline">
                             <Link href={`/companies/${company.id}/results`}>Results</Link>
                           </Button>
-                          <Button asChild size="sm" variant="outline" className="uppercase tracking-wider">
+                          <Button asChild size="sm" variant="outline">
                             <Link href={`/companies/${company.id}/roadmap`}>Roadmap</Link>
                           </Button>
                         </>
                       )}
-                      <Button asChild size="sm" className="uppercase tracking-wider">
+                      <Button asChild size="sm">
                         <Link href={`/companies/${company.id}/assessment`}>
                           <ClipboardCheck data-slot="icon" />
                           {latest?.status === "in_progress"

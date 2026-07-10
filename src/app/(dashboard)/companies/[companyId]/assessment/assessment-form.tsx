@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -185,10 +186,8 @@ export function AssessmentForm({
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-1">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Readiness assessment/
-        </p>
-        <h1 className="text-3xl font-extrabold text-primary">{companyName}</h1>
+        <SectionLabel>Readiness assessment</SectionLabel>
+        <h1 className="text-3xl font-bold text-primary">{companyName}</h1>
         <p className="text-muted-foreground">
           Answers are saved as you go — you can leave and resume at any time.
         </p>
@@ -245,7 +244,7 @@ export function AssessmentForm({
           {category.questions.map((question, index) => (
             <div key={question.id} className="space-y-3">
               <p className="font-medium leading-snug">
-                <span className="mr-2 text-sm font-bold text-secondary">
+                <span className="mr-2 text-sm font-bold text-primary">
                   {index + 1}.
                 </span>
                 {question.text}
@@ -266,16 +265,11 @@ export function AssessmentForm({
           variant="outline"
           disabled={step === 0}
           onClick={() => setStep((s) => s - 1)}
-          className="uppercase tracking-[0.15em]"
         >
           <ArrowLeft data-slot="icon" /> Previous
         </Button>
         {isLastStep ? (
-          <Button
-            onClick={handleComplete}
-            disabled={completing || answered < total}
-            className="uppercase tracking-[0.15em]"
-          >
+          <Button onClick={handleComplete} disabled={completing || answered < total}>
             {completing
               ? "Computing score…"
               : answered < total
@@ -283,10 +277,7 @@ export function AssessmentForm({
                 : "Complete & view results"}
           </Button>
         ) : (
-          <Button
-            onClick={() => setStep((s) => s + 1)}
-            className="uppercase tracking-[0.15em]"
-          >
+          <Button onClick={() => setStep((s) => s + 1)}>
             Next <ArrowRight data-slot="icon" />
           </Button>
         )}

@@ -47,7 +47,7 @@ export function AppSidebar({
             <Compass className="size-4 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold uppercase tracking-[0.15em] text-white">
+            <p className="truncate text-sm font-bold tracking-tight text-white">
               IPO Compass
             </p>
             <p className="truncate text-xs text-sidebar-foreground/70">
@@ -58,8 +58,8 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="uppercase italic tracking-wider text-[#c187a1]">
-            /Workspace/
+          <SidebarGroupLabel className="uppercase tracking-wide">
+            Workspace
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

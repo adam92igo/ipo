@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ScoreGauge } from "@/components/charts/score-gauge";
+import { SectionLabel } from "@/components/section-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,10 +86,8 @@ export default async function ResultsPage({
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-sm uppercase italic tracking-wider text-secondary">
-            /IPO readiness score/
-          </p>
-          <h1 className="text-3xl font-extrabold text-primary">{company.name}</h1>
+          <SectionLabel>IPO readiness score</SectionLabel>
+          <h1 className="text-3xl font-bold text-primary">{company.name}</h1>
           <p className="text-muted-foreground">
             Assessed on{" "}
             {assessment.completedAt!.toLocaleDateString("en-GB", {
@@ -99,7 +98,7 @@ export default async function ResultsPage({
             · questionnaire {assessment.questionnaireVersion}
           </p>
         </div>
-        <Button asChild variant="outline" className="uppercase tracking-[0.15em]">
+        <Button asChild variant="outline">
           <Link href={`/companies/${company.id}/assessment`}>
             <RotateCcw data-slot="icon" /> Reassess
           </Link>
@@ -110,9 +109,7 @@ export default async function ResultsPage({
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Card className="flex flex-col justify-center">
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            <p className="text-sm uppercase italic tracking-wider text-secondary">
-              /Global score/
-            </p>
+            <SectionLabel>Global score</SectionLabel>
             <p className="text-7xl font-extrabold text-primary">
               {Math.round(global)}
               <span className="text-3xl">%</span>
@@ -231,10 +228,10 @@ export default async function ResultsPage({
       </Card>
 
       <div className="flex justify-between">
-        <Button asChild variant="ghost" className="uppercase tracking-[0.15em]">
+        <Button asChild variant="ghost">
           <Link href="/companies">Back to companies</Link>
         </Button>
-        <Button asChild className="uppercase tracking-[0.15em]">
+        <Button asChild>
           <Link href={`/companies/${company.id}/roadmap`}>
             Build the roadmap <ArrowRight data-slot="icon" />
           </Link>

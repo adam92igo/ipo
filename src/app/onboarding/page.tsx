@@ -4,6 +4,7 @@ import { Compass } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,10 +60,8 @@ export default function OnboardingPage() {
           <div className="flex size-10 items-center justify-center rounded-full bg-primary">
             <Compass className="size-5 text-white" />
           </div>
-          <p className="text-sm uppercase italic tracking-wider text-secondary">
-            /One last step/
-          </p>
-          <CardTitle className="text-2xl font-extrabold text-primary">
+          <SectionLabel>One last step</SectionLabel>
+          <CardTitle className="text-2xl font-bold text-primary">
             Create your organization
           </CardTitle>
           <CardDescription>
@@ -77,15 +76,11 @@ export default function OnboardingPage() {
               <Input
                 id="name"
                 name="name"
-                placeholder="e.g. Harington Advisory"
+                placeholder="e.g. Northwind Manufacturing"
                 required
               />
             </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full uppercase tracking-[0.15em]"
-            >
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Creating…" : "Create organization"}
             </Button>
           </form>

@@ -54,7 +54,6 @@ export function GenerateRoadmapButton({
       onClick={handleGenerate}
       disabled={pending}
       variant={hasItems ? "outline" : "default"}
-      className="uppercase tracking-[0.15em]"
     >
       <RefreshCcw data-slot="icon" />
       {pending ? "Generating…" : hasItems ? "Refresh from assessment" : "Generate roadmap"}

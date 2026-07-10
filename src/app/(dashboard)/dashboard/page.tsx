@@ -1,5 +1,6 @@
 import { Building2, ClipboardCheck, LineChart, Map, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,10 +48,8 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="space-y-1">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Overview/
-        </p>
-        <h1 className="text-3xl font-extrabold text-primary">
+        <SectionLabel>Overview</SectionLabel>
+        <h1 className="text-3xl font-bold text-primary">
           {ctx.organizationName}
         </h1>
         <p className="text-muted-foreground">
@@ -73,7 +72,7 @@ export default async function DashboardPage() {
               </CardDescription>
             </div>
           </div>
-          <Button asChild className="uppercase tracking-[0.15em]">
+          <Button asChild>
             <Link href="/companies">
               {companies.length === 0 ? "Add a company" : "Manage"}
             </Link>
@@ -82,9 +81,7 @@ export default async function DashboardPage() {
       </Card>
 
       <div className="space-y-3">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /Modules/
-        </p>
+        <SectionLabel>Modules</SectionLabel>
         <div className="grid gap-6 md:grid-cols-2">
           {modules.map((item) => (
             <Link key={item.title} href={item.href} className="group">

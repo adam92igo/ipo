@@ -1,4 +1,5 @@
 import { TriangleAlert } from "lucide-react";
+import { SectionLabel } from "@/components/section-label";
 import { Card, CardContent } from "@/components/ui/card";
 import { isAiConfigured } from "@/lib/ai/config";
 import { listCompanies } from "@/lib/data-access/companies";
@@ -14,10 +15,8 @@ export default async function AssistantPage() {
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col gap-6">
       <div className="space-y-1">
-        <p className="text-sm uppercase italic tracking-wider text-secondary">
-          /AI assistant/
-        </p>
-        <h1 className="text-3xl font-extrabold text-primary">IPO Assistant</h1>
+        <SectionLabel>AI assistant</SectionLabel>
+        <h1 className="text-3xl font-bold text-primary">IPO Assistant</h1>
         <p className="text-muted-foreground">
           Answers about the IPO process, tailored to your companies&apos; readiness
           data.

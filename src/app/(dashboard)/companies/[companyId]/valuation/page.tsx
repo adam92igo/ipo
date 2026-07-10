@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { ValuationRangeChart } from "@/components/charts/valuation-range-chart";
+import { SectionLabel } from "@/components/section-label";
 import {
   Card,
   CardContent,
@@ -51,10 +52,8 @@ export default async function ValuationPage({
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-sm uppercase italic tracking-wider text-secondary">
-            /Valuation/
-          </p>
-          <h1 className="text-3xl font-extrabold text-primary">{company.name}</h1>
+          <SectionLabel>Valuation</SectionLabel>
+          <h1 className="text-3xl font-bold text-primary">{company.name}</h1>
           <p className="text-muted-foreground">
             Indicative equity value from three deterministic methods — not
             investment advice.
@@ -89,9 +88,7 @@ export default async function ValuationPage({
           <div className="grid gap-6 lg:grid-cols-[1fr_1.6fr]">
             <Card className="flex flex-col justify-center">
               <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <p className="text-sm uppercase italic tracking-wider text-secondary">
-                  /Estimated equity value/
-                </p>
+                <SectionLabel>Estimated equity value</SectionLabel>
                 <p className="text-4xl font-extrabold text-primary">
                   {formatEurCompact(results.aggregated.low)}
                   <span className="mx-2 text-2xl text-muted-foreground">–</span>

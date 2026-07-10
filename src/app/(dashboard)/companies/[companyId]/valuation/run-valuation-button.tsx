@@ -30,11 +30,7 @@ export function RunValuationButton({
   }
 
   return (
-    <Button
-      onClick={handleRun}
-      disabled={running || !hasFinancials}
-      className="uppercase tracking-[0.15em]"
-    >
+    <Button onClick={handleRun} disabled={running || !hasFinancials}>
       <Calculator data-slot="icon" />
       {running
         ? "Computing…"

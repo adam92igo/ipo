@@ -49,7 +49,7 @@ export function CreateCompanyDialog({ aiEnabled = false }: { aiEnabled?: boolean
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="uppercase tracking-[0.15em]">
+        <Button>
           <Plus data-slot="icon" /> Add company
         </Button>
       </DialogTrigger>
@@ -145,7 +145,7 @@ function CompanyForm({
             variant="outline"
             disabled={filling || values.name.trim().length < 2}
             onClick={handleFillWithAi}
-            className="w-full uppercase tracking-[0.15em]"
+            className="w-full"
           >
             <Sparkles data-slot="icon" />
             {filling ? "Searching registry & website…" : "Fill with AI"}
@@ -223,11 +223,7 @@ function CompanyForm({
         />
         <FieldError errors={state.fieldErrors?.website} />
       </div>
-      <Button
-        type="submit"
-        disabled={pending}
-        className="w-full uppercase tracking-[0.15em]"
-      >
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Adding…" : "Add company"}
       </Button>
     </form>

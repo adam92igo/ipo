@@ -172,11 +172,7 @@ export function AssistantChat({
           maxLength={4000}
           className="resize-none"
         />
-        <Button
-          type="submit"
-          disabled={busy || !input.trim()}
-          className="uppercase tracking-[0.15em]"
-        >
+        <Button type="submit" disabled={busy || !input.trim()}>
           <Send data-slot="icon" /> Send
         </Button>
       </form>
