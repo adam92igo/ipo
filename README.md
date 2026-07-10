@@ -102,6 +102,39 @@ either limit returns an explicit error (HTTP 429 with a `Retry-After` header
 for the assistant API; a `{ ok: false, error }` result for the "Fill with AI"
 server action) surfaced in the UI the same way as any other AI error.
 
+## Demo environment
+
+A separate, disposable environment for showing the product (investors, sales)
+without touching your dev data: its own database (`ipo_compass_demo`) and its
+own port (`3200`), so it can run alongside `pnpm dev` without conflicting.
+
+One-time setup:
+
+```bash
+# 1. Add to .env:
+DEMO_DATABASE_URL=postgresql://ipo:ipo_dev_password@localhost:5432/ipo_compass_demo
+DEMO_ACCOUNT_EMAIL=demo@ipocompass.local   # the email you'll sign up with below
+
+# 2. Start the demo server (creates + migrates the demo database on first run)
+pnpm demo
+
+# 3. Open http://localhost:3200/sign-up, sign up with DEMO_ACCOUNT_EMAIL, and
+#    create an organization on the onboarding screen.
+
+# 4. Populate it with 3 fictional companies at different readiness stages
+pnpm demo:seed
+```
+
+`pnpm demo:seed` is idempotent: it wipes and recreates the seeded companies
+every time (never the account or organization), so before a pitch just run
+it again to reset to a pristine state. It reuses the real scoring, valuation
+and roadmap engines — nothing is hand-fabricated, so the numbers you see are
+exactly what those engines compute for the seeded answers/financials. The
+demo server also raises the AI rate limits (see above) so a live walkthrough
+can't accidentally trip them, and shares whatever `ANTHROPIC_API_KEY` /
+`PAPPERS_API_KEY` are in `.env` — set them if you want to demo the AI modules
+live, or leave them unset to show the degraded-mode banner instead.
+
 ## Commands
 
 | Command | Purpose |
@@ -111,6 +144,8 @@ server action) surfaced in the UI the same way as any other AI error.
 | `pnpm test` | Vitest — unit + integration (integration tests need Docker Postgres) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm test:e2e` | Playwright smoke test — full journey against the test database |
+| `pnpm demo` | Demo server on port 3200, against a separate demo database |
+| `pnpm demo:seed` | (Re)populate the demo database with 3 fictional companies |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | ESLint |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle Kit migrations (never edit generated SQL by hand) |
@@ -145,6 +180,7 @@ above instead.
 config/                      Versioned business content (questionnaire, valuation refs, roadmap rules)
 drizzle/                      Generated SQL migrations
 e2e/                          Playwright end-to-end smoke test
+scripts/                      Standalone scripts (demo server + seed data)
 src/
   app/                        Next.js routes: (auth), (dashboard), onboarding, api
   components/                 Shared UI (shadcn primitives + app components)
