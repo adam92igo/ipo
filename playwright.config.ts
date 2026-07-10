@@ -23,8 +23,13 @@ export default defineConfig({
   // --turbopack` compile on a first-hit route in CI — each first navigation
   // to a not-yet-compiled route can itself take several seconds. Observed a
   // near-miss in CI at 15s on the results transition (compile + score/radar
-  // render + DB round trip stacked together), so 30s to have real headroom.
-  expect: { timeout: 30_000 },
+  // render + DB round trip stacked together), so 40s to have real headroom.
+  expect: { timeout: 40_000 },
+  // One retry in CI absorbs occasional runner-speed variance (seen once at
+  // the 30s expect timeout, immediately green on re-run with no code
+  // change) without masking a real, reproducible failure — never retries
+  // locally, so a local failure is always taken at face value.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   reporter: "list",
