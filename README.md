@@ -58,7 +58,7 @@ Euronext Paris), English UI.
 
 ## Getting started
 
-Prerequisites: Node 20+, pnpm, Docker.
+Prerequisites: Node 22.13+ (required by pnpm 11), pnpm, Docker.
 
 ```bash
 cp .env.example .env        # then set BETTER_AUTH_SECRET (openssl rand -base64 32)

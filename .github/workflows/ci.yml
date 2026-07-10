@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  # pnpm 11 (pinned via package.json's "packageManager") requires Node >= 22.13.
+  NODE_VERSION: "22"
 
 jobs:
   typecheck:
