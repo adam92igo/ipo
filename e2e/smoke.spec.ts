@@ -47,8 +47,15 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await page.getByRole("button", { name: "Add company", exact: true }).click();
   await expect(page.getByText("Smoke Test SAS")).toBeVisible();
 
+  await page.goto("/dashboard");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  for (const label of ["Overview", "Diagnostic", "Valuation", "Roadmap", "Assistant"]) {
+    await expect(page.getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "Companies", exact: true })).toHaveCount(0);
+
   // Complete the full readiness assessment
-  await page.getByRole("link", { name: /Assess/ }).click();
+  await page.getByRole("link", { name: "Diagnostic", exact: true }).click();
   await expect(page).toHaveURL(/\/assessment$/);
 
   const categoryTotals: Array<[string, number]> = [
