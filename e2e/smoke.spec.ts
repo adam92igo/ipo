@@ -105,6 +105,14 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await page.getByRole("button", { name: "Generate roadmap" }).click();
   await expect(page.getByText(/of \d+ steps done/)).toBeVisible();
 
+  // Overview cockpit: persisted readiness, valuation and route are visible
+  await page.goto("/dashboard");
+  await expect(page.getByText("Readiness index")).toBeVisible();
+  await expect(page.getByText("Route to market")).toBeVisible();
+  await expect(page.getByText("Indicative equity value")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Route to market" })).toBeVisible();
+  await expect(page.getByText("Smoke Test SAS")).toBeVisible();
+
   // Assistant: degraded mode without an AI key — banner shown, no chat, no API call
   await page.goto("/assistant");
   await expect(page.getByText("AI is not configured yet")).toBeVisible();
