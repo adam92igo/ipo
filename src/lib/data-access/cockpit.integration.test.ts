@@ -133,6 +133,77 @@ describe("cockpit data-access", () => {
     }
   });
 
+  it("rejects a non-null completed snapshot with partial category scores", async () => {
+    const ctx = await seedOrgWithUser("owner");
+    const company = await createCompany(ctx, {
+      name: "Partial Legacy SAS",
+      sector: "Software",
+      country: "FR",
+    });
+    await db.insert(assessment).values({
+      organizationId: ctx.organizationId,
+      companyId: company.id,
+      questionnaireVersion: CURRENT_QUESTIONNAIRE_VERSION,
+      status: "completed",
+      globalScore: "50",
+      categoryScores: { governance: 60 },
+      completedAt: new Date("2026-07-11T12:00:00.000Z"),
+    });
+
+    const snapshot = await getCockpitSnapshot(ctx);
+    expect(snapshot.kind).toBe("company");
+    if (snapshot.kind === "company") {
+      expect(snapshot.assessment).toEqual({
+        kind: "unavailable",
+        reason: "incomplete_snapshot",
+      });
+      expect(snapshot.limitingCategory).toBeNull();
+      expect(snapshot.trajectory.current.id).toBe("foundation");
+    }
+  });
+
+  it("rejects non-finite global scores and out-of-range category scores", async () => {
+    const validCategoryScores = Object.fromEntries(
+      questionnaire.categories.map((category) => [category.id, 50]),
+    );
+    const invalidSnapshots = [
+      { globalScore: "NaN", categoryScores: validCategoryScores },
+      {
+        globalScore: "50",
+        categoryScores: { ...validCategoryScores, governance: 101 },
+      },
+    ];
+
+    for (const [index, invalid] of invalidSnapshots.entries()) {
+      const ctx = await seedOrgWithUser("owner");
+      const company = await createCompany(ctx, {
+        name: `Invalid Scores ${index} SAS`,
+        sector: "Software",
+        country: "FR",
+      });
+      await db.insert(assessment).values({
+        organizationId: ctx.organizationId,
+        companyId: company.id,
+        questionnaireVersion: CURRENT_QUESTIONNAIRE_VERSION,
+        status: "completed",
+        globalScore: invalid.globalScore,
+        categoryScores: invalid.categoryScores,
+        completedAt: new Date("2026-07-11T12:00:00.000Z"),
+      });
+
+      const snapshot = await getCockpitSnapshot(ctx);
+      expect(snapshot.kind).toBe("company");
+      if (snapshot.kind === "company") {
+        expect(snapshot.assessment).toEqual({
+          kind: "unavailable",
+          reason: "incomplete_snapshot",
+        });
+        expect(snapshot.limitingCategory).toBeNull();
+        expect(snapshot.trajectory.current.id).toBe("foundation");
+      }
+    }
+  });
+
   it("reports answer progress for an in-progress assessment without a provisional score", async () => {
     const ctx = await seedOrgWithUser("owner");
     const company = await createCompany(ctx, {

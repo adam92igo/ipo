@@ -52,13 +52,30 @@ export type CockpitSnapshot =
 
 function frozenCategoryScores(
   questionnaire: ReturnType<typeof getQuestionnaire>,
-  categoryScores: Record<string, number> | null,
+  categoryScores: Record<string, number>,
 ): CategoryScore[] {
   return questionnaire.categories.map((category) => ({
     id: category.id,
     label: category.label,
-    score: categoryScores?.[category.id] ?? 0,
+    score: categoryScores[category.id],
   }));
+}
+
+function isBoundedScore(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
+}
+
+function hasCompleteCategoryScores(
+  questionnaire: ReturnType<typeof getQuestionnaire>,
+  categoryScores: Record<string, number> | null,
+): categoryScores is Record<string, number> {
+  if (categoryScores === null) return false;
+  const hasEveryCategory = questionnaire.categories.every(
+    (category) =>
+      Object.prototype.hasOwnProperty.call(categoryScores, category.id) &&
+      isBoundedScore(categoryScores[category.id]),
+  );
+  return hasEveryCategory && Object.values(categoryScores).every(isBoundedScore);
 }
 
 function roadmapPriority(item: RoadmapItem): CockpitPriority | null {
@@ -100,15 +117,26 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
   let globalScore: number | null = null;
   let limitingCategory: string | null = null;
 
+  const completedQuestionnaire = completedAssessment
+    ? getQuestionnaire(completedAssessment.questionnaireVersion)
+    : null;
+  const frozenGlobalScore =
+    completedAssessment?.globalScore === null || completedAssessment?.globalScore === undefined
+      ? null
+      : Number(completedAssessment.globalScore);
+
   if (
     completedAssessment &&
-    completedAssessment.globalScore !== null &&
-    completedAssessment.categoryScores !== null &&
+    completedQuestionnaire &&
+    isBoundedScore(frozenGlobalScore) &&
+    hasCompleteCategoryScores(completedQuestionnaire, completedAssessment.categoryScores) &&
     completedAssessment.completedAt !== null
   ) {
-    const questionnaire = getQuestionnaire(completedAssessment.questionnaireVersion);
-    frozenScores = frozenCategoryScores(questionnaire, completedAssessment.categoryScores);
-    globalScore = Number(completedAssessment.globalScore);
+    frozenScores = frozenCategoryScores(
+      completedQuestionnaire,
+      completedAssessment.categoryScores,
+    );
+    globalScore = frozenGlobalScore;
     limitingCategory = frozenScores.reduce<CategoryScore | null>(
       (lowest, category) => (!lowest || category.score < lowest.score ? category : lowest),
       null,
