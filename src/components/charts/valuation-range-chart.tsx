@@ -2,9 +2,9 @@ import { formatEurCompact } from "@/lib/format";
 
 /**
  * Single-hue range chart: one row per valuation method (low—high segment with
- * a mid marker) plus an emphasized aggregated row. Marks use var(--chart-1);
- * identity comes from row labels, values are directly labeled — color never
- * carries meaning alone.
+ * a mid marker) plus an emphasized aggregated row. Marks use the cockpit's
+ * direction token; identity comes from row labels and values are directly
+ * labeled, so color never carries meaning alone.
  */
 interface RangeRow {
   label: string;
@@ -56,7 +56,8 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               x2={WIDTH - PAD_R}
               y1={cy}
               y2={cy}
-              stroke="var(--border)"
+              stroke="var(--color-primary)"
+              strokeOpacity={0.14}
               strokeWidth={1}
             />
             {/* low—high segment */}
@@ -65,7 +66,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               x2={x(row.high)}
               y1={cy}
               y2={cy}
-              stroke="var(--chart-1)"
+              stroke="var(--color-direction, var(--color-primary))"
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               opacity={row.emphasis ? 1 : 0.55}
@@ -77,7 +78,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               cx={x(row.mid)}
               cy={cy}
               r={row.emphasis ? 6 : 4.5}
-              fill="var(--chart-1)"
+              fill="var(--color-direction, var(--color-primary))"
               stroke="var(--background)"
               strokeWidth={2}
             >

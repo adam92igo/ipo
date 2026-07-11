@@ -18,17 +18,31 @@ export function ScoreGauge({
   const r = 40;
   const circumference = 2 * Math.PI * r;
   const filled = (score / 100) * circumference;
+  const signalColor =
+    status === "strength"
+      ? "var(--color-positive, var(--color-success))"
+      : status === "weakness"
+        ? "var(--color-attention, var(--color-destructive))"
+        : "var(--color-direction, var(--color-primary))";
 
   return (
     <div className="flex flex-col items-center gap-2">
       <svg viewBox="0 0 100 100" className="size-28" role="img" aria-label={`${label}: ${score}%`}>
-        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--muted)" strokeWidth={9} />
         <circle
           cx="50"
           cy="50"
           r={r}
           fill="none"
-          stroke="var(--chart-1)"
+          stroke="var(--color-primary)"
+          strokeOpacity={0.12}
+          strokeWidth={9}
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          stroke={signalColor}
           strokeWidth={9}
           strokeLinecap="round"
           strokeDasharray={`${filled} ${circumference - filled}`}

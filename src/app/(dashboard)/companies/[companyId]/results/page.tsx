@@ -3,16 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RadarChart } from "@/components/charts/radar-chart";
 import { ScoreGauge } from "@/components/charts/score-gauge";
-import { SectionLabel } from "@/components/section-label";
-import { Badge } from "@/components/ui/badge";
+import { ReadinessBearing } from "@/components/cockpit/readiness-bearing";
+import { InstrumentPanel } from "@/components/layout/instrument-panel";
+import { PageHeading } from "@/components/layout/page-heading";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   classifyCategories,
   rankPriorityActions,
@@ -81,126 +75,137 @@ export default async function ResultsPage({
         : null;
   const categoryLabel = (id: string) =>
     questionnaire.categories.find((c) => c.id === id)?.label ?? id;
+  const readinessLabel =
+    global >= questionnaire.thresholds.strength
+      ? "Strong position"
+      : global < questionnaire.thresholds.weakness
+        ? "Priority attention"
+        : "Advancing";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-1">
-          <SectionLabel>IPO readiness score</SectionLabel>
-          <h1 className="text-3xl font-bold text-primary">{company.name}</h1>
-          <p className="text-muted-foreground">
-            Assessed on{" "}
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHeading
+        eyebrow="IPO readiness score"
+        title={company.name}
+        description="Frozen assessment evidence across governance, finance, growth, compliance, and reporting."
+        metadata={
+          <span className="border border-border bg-card px-3 py-2 font-utility text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
+            Assessed{" "}
             {assessment.completedAt!.toLocaleDateString("en-GB", {
               day: "numeric",
               month: "long",
               year: "numeric",
             })}{" "}
             · questionnaire {assessment.questionnaireVersion}
-          </p>
+          </span>
+        }
+        actions={
+          <Button asChild variant="outline">
+            <Link href={`/companies/${company.id}/assessment`}>
+              <RotateCcw data-slot="icon" /> Reassess
+            </Link>
+          </Button>
+        }
+      />
+
+      <InstrumentPanel className="p-0">
+        <div className="grid lg:grid-cols-[0.8fr_1.5fr]">
+          <section className="flex min-h-64 items-center border-b border-border p-6 lg:border-b-0 lg:border-r">
+            <div>
+              <p className="instrument-label">Readiness bearing</p>
+              <div className="mt-5">
+                <ReadinessBearing score={global} label={readinessLabel} />
+              </div>
+              <p className="mt-5 max-w-sm text-sm text-muted-foreground">
+                Weighted average of the {questionnaire.categories.length} frozen
+                category scores recorded at completion.
+              </p>
+            </div>
+          </section>
+
+          <section className="p-6">
+            <p className="instrument-label">Assessment evidence</p>
+            <h2 className="mt-1 font-heading text-2xl font-extrabold uppercase tracking-wide text-primary">
+              Readiness signals
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Strength ≥ {questionnaire.thresholds.strength}% · weakness &lt;{" "}
+              {questionnaire.thresholds.weakness}%
+            </p>
+            <div className="mt-4 flex justify-center">
+              <RadarChart data={radarData} />
+            </div>
+          </section>
         </div>
-        <Button asChild variant="outline">
-          <Link href={`/companies/${company.id}/assessment`}>
-            <RotateCcw data-slot="icon" /> Reassess
-          </Link>
-        </Button>
-      </div>
 
-      {/* Hero score + radar */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-        <Card className="flex flex-col justify-center">
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            <SectionLabel>Global score</SectionLabel>
-            <p className="text-7xl font-extrabold text-primary">
-              {Math.round(global)}
-              <span className="text-3xl">%</span>
-            </p>
-            <p className="max-w-xs text-sm text-muted-foreground">
-              Weighted average of the {questionnaire.categories.length} readiness
-              categories below.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center justify-center py-6">
-            <RadarChart data={radarData} />
-          </CardContent>
-        </Card>
-      </div>
+        <div className="border-t border-border p-6">
+          <h3 className="instrument-label">Category scores</h3>
+          <div className="mt-4 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {radarData.map((d, i) => (
+              <ScoreGauge
+                key={d.label}
+                label={d.label}
+                score={d.score}
+                status={statusOf(questionnaire.categories[i].id)}
+              />
+            ))}
+          </div>
+        </div>
+      </InstrumentPanel>
 
-      {/* Gauges */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-primary">Category scores</CardTitle>
-          <CardDescription>
-            Strength ≥ {questionnaire.thresholds.strength}% · weakness &lt;{" "}
-            {questionnaire.thresholds.weakness}%
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-          {radarData.map((d, i) => (
-            <ScoreGauge
-              key={d.label}
-              label={d.label}
-              score={d.score}
-              status={statusOf(questionnaire.categories[i].id)}
-            />
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Strengths / weaknesses / priority actions */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <CircleCheck className="size-5" /> Strengths
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <InstrumentPanel
+          eyebrow="Positive evidence"
+          title={
+            <span className="flex items-center gap-2">
+              <CircleCheck className="size-5 text-success" /> Strengths
+            </span>
+          }
+        >
+          <div className="divide-y divide-border border-y border-border">
             {strengths.length === 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p className="py-4 text-sm text-muted-foreground">
                 No category reaches the strength threshold yet.
               </p>
             )}
             {strengths.map((s) => (
-              <div key={s.id} className="flex items-center justify-between rounded-sm bg-muted px-3 py-2">
+              <div key={s.id} className="flex items-center justify-between gap-4 py-3">
                 <span className="text-sm font-semibold">{s.label}</span>
-                <span className="text-sm font-bold text-primary">{s.score}%</span>
+                <span className="font-utility text-sm font-semibold text-success">{s.score}%</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <TriangleAlert className="size-5" /> Weaknesses
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+          </div>
+        </InstrumentPanel>
+        <InstrumentPanel
+          eyebrow="Points of attention"
+          title={
+            <span className="flex items-center gap-2">
+              <TriangleAlert className="size-5 text-destructive" /> Weaknesses
+            </span>
+          }
+        >
+          <div className="divide-y divide-border border-y border-border">
             {weaknesses.length === 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p className="py-4 text-sm text-muted-foreground">
                 No category falls below the weakness threshold.
               </p>
             )}
             {weaknesses.map((w) => (
-              <div key={w.id} className="flex items-center justify-between rounded-sm bg-muted px-3 py-2">
+              <div key={w.id} className="flex items-center justify-between gap-4 py-3">
                 <span className="text-sm font-semibold">{w.label}</span>
-                <span className="text-sm font-bold text-destructive">{w.score}%</span>
+                <span className="font-utility text-sm font-semibold text-destructive">{w.score}%</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </InstrumentPanel>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-primary">Priority actions</CardTitle>
-          <CardDescription>
-            Rules-based: the questions weighing most on your score, most impactful
-            first. The full roadmap arrives with module 4.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <InstrumentPanel eyebrow="Course corrections" title="Priority actions">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Rules-based: the questions weighing most on your score, most impactful
+          first. Continue to the roadmap for the full sequenced plan.
+        </p>
+        <div>
           {priorityActions === null ? (
             <p className="text-sm text-muted-foreground">
               Priority actions are unavailable for this assessment — the stored
@@ -212,20 +217,22 @@ export default async function ResultsPage({
               Nothing to flag — every weighted question is fully satisfied.
             </p>
           ) : (
-            priorityActions.map((action, i) => (
-              <div key={action.questionId} className="flex items-start gap-3 rounded-sm border px-4 py-3">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                  {i + 1}
-                </span>
-                <p className="min-w-0 flex-1 font-medium">{action.actionLabel}</p>
-                <Badge variant="outline" className="uppercase">
-                  {categoryLabel(action.categoryId)}
-                </Badge>
-              </div>
-            ))
+            <ol aria-label="Assessment priority actions" className="divide-y divide-border border-y border-border">
+              {priorityActions.map((action, i) => (
+                <li key={action.questionId} className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 py-3">
+                  <span className="grid size-7 place-items-center border border-accent/50 bg-accent/10 font-utility text-[0.625rem] font-semibold text-primary">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="min-w-0 text-sm font-semibold text-primary">{action.actionLabel}</p>
+                  <span className="font-utility text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {categoryLabel(action.categoryId)}
+                  </span>
+                </li>
+              ))}
+            </ol>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </InstrumentPanel>
 
       <div className="flex justify-between">
         <Button asChild variant="ghost">

@@ -45,7 +45,7 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await page.getByLabel("Company name *").fill("Smoke Test SAS");
   await page.getByLabel("Sector *").fill("Software");
   await page.getByRole("button", { name: "Add company", exact: true }).click();
-  await expect(page.getByText("Smoke Test SAS")).toBeVisible();
+  await expect(page.getByRole("main").getByText("Smoke Test SAS")).toBeVisible();
 
   await page.goto("/dashboard");
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
@@ -57,6 +57,15 @@ test("IPO readiness journey end to end", async ({ page }) => {
   // Complete the full readiness assessment
   await page.getByRole("link", { name: "Diagnostic", exact: true }).click();
   await expect(page).toHaveURL(/\/assessment$/);
+  await expect(
+    page.getByRole("progressbar", { name: "Assessment completion" }),
+  ).toHaveAttribute("aria-valuenow", "0");
+  await expect(
+    page.getByRole("navigation", { name: "Assessment sections" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Governance section" }),
+  ).toHaveAttribute("aria-current", "step");
 
   const categoryTotals: Array<[string, number]> = [
     ["Governance", 22],
@@ -82,9 +91,10 @@ test("IPO readiness journey end to end", async ({ page }) => {
   // Results page: frozen score + radar + category gauges rendered
   await expect(page).toHaveURL(/\/results$/);
   await expect(page.getByText("IPO readiness score")).toBeVisible();
-  await expect(page.getByText("Global score")).toBeVisible();
+  await expect(page.getByLabel(/IPO readiness: \d+%/)).toBeVisible();
+  await expect(page.getByText("Readiness signals")).toBeVisible();
   await expect(page.getByRole("img", { name: /Readiness radar/ })).toBeVisible();
-  await expect(page.getByText("Category scores")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Category scores" })).toBeVisible();
 
   // Valuation: add a fiscal year, then run the valuation
   await page.getByRole("link", { name: "Build the roadmap" }).click();

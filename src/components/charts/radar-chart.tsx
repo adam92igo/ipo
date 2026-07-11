@@ -1,8 +1,8 @@
 /**
  * Single-series pentagon radar, pure SVG (no chart lib).
- * Marks use var(--chart-1) (navy in light mode, light blue in dark — both
- * validated ≥3:1 against their surface); grid stays recessive; every vertex
- * carries a visible value label, so identity never relies on color.
+ * Direction marks use the cockpit's semantic chart token; the grid stays
+ * recessive and every vertex carries a visible value label, so identity never
+ * relies on color.
  */
 interface RadarDatum {
   label: string;
@@ -48,7 +48,8 @@ export function RadarChart({ data }: { data: RadarDatum[] }) {
           key={ring}
           points={polygonPoints(Array(n).fill(ring))}
           fill="none"
-          stroke="var(--border)"
+          stroke="var(--color-primary)"
+          strokeOpacity={0.14}
           strokeWidth={1}
         />
       ))}
@@ -61,7 +62,8 @@ export function RadarChart({ data }: { data: RadarDatum[] }) {
             y1={CY}
             x2={x}
             y2={y}
-            stroke="var(--border)"
+            stroke="var(--color-primary)"
+            strokeOpacity={0.14}
             strokeWidth={1}
           />
         );
@@ -70,9 +72,9 @@ export function RadarChart({ data }: { data: RadarDatum[] }) {
       {/* Data polygon */}
       <polygon
         points={polygonPoints(data.map((d) => d.score))}
-        fill="var(--chart-1)"
+        fill="var(--color-direction, var(--color-primary))"
         fillOpacity={0.16}
-        stroke="var(--chart-1)"
+        stroke="var(--color-direction, var(--color-primary))"
         strokeWidth={2}
         strokeLinejoin="round"
       />
@@ -87,7 +89,7 @@ export function RadarChart({ data }: { data: RadarDatum[] }) {
             cx={x}
             cy={y}
             r={4.5}
-            fill="var(--chart-1)"
+            fill="var(--color-direction, var(--color-primary))"
             stroke="var(--background)"
             strokeWidth={2}
           >
