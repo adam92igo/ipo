@@ -4,20 +4,20 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const sourceSans = Source_Sans_3({
-  variable: "--font-sans",
+  variable: "--font-source-sans-3",
   subsets: ["latin"],
   display: "swap",
 });
 
 const barlowCondensed = Barlow_Condensed({
-  variable: "--font-heading",
+  variable: "--font-barlow-condensed",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-utility",
+  variable: "--font-ibm-plex-mono",
   subsets: ["latin"],
   weight: ["500", "600"],
   display: "swap",

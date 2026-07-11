@@ -16,7 +16,6 @@ export function BrandMark({
     alt: decorative ? "" : "IPO Compass",
     width: 889,
     height: 920,
-    unoptimized: true,
     priority,
     className: cn("h-auto w-12 object-contain", className),
   });

@@ -4,9 +4,10 @@ import { describe, expect, it } from "vitest";
 import { BrandMark } from "./brand-mark";
 
 describe("BrandMark", () => {
-  it("uses the approved transparent asset and accessible name", () => {
+  it("uses the approved transparent asset through Next image optimization", () => {
     const html = renderToStaticMarkup(createElement(BrandMark));
-    expect(html).toContain('src="/brand/ipo-compass-mark.png"');
+    expect(decodeURIComponent(html)).toContain("/brand/ipo-compass-mark.png");
+    expect(html).toContain('src="/_next/image?url=');
     expect(html).toContain('alt="IPO Compass"');
   });
 
