@@ -37,6 +37,7 @@ export function deriveMarketTrajectory(globalScore: number | null) {
 
 export type AssessmentSnapshotState =
   | { kind: "missing" }
+  | { kind: "unavailable"; reason: "incomplete_snapshot" }
   | { kind: "in_progress"; answered: number; total: number }
   | {
       kind: "available";

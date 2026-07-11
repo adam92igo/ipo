@@ -100,7 +100,12 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
   let globalScore: number | null = null;
   let limitingCategory: string | null = null;
 
-  if (completedAssessment) {
+  if (
+    completedAssessment &&
+    completedAssessment.globalScore !== null &&
+    completedAssessment.categoryScores !== null &&
+    completedAssessment.completedAt !== null
+  ) {
     const questionnaire = getQuestionnaire(completedAssessment.questionnaireVersion);
     frozenScores = frozenCategoryScores(questionnaire, completedAssessment.categoryScores);
     globalScore = Number(completedAssessment.globalScore);
@@ -111,10 +116,12 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
     assessmentState = {
       kind: "available",
       score: globalScore,
-      completedAt: completedAssessment.completedAt!,
+      completedAt: completedAssessment.completedAt,
       questionnaireVersion: completedAssessment.questionnaireVersion,
-      categoryScores: completedAssessment.categoryScores ?? {},
+      categoryScores: completedAssessment.categoryScores,
     };
+  } else if (completedAssessment) {
+    assessmentState = { kind: "unavailable", reason: "incomplete_snapshot" };
   } else if (latestAssessment?.status === "in_progress" && inProgressAnswers) {
     const progress = getProgress(
       getQuestionnaire(latestAssessment.questionnaireVersion),
