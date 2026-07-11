@@ -11,6 +11,10 @@ export interface DashboardNavItem {
   href: string;
 }
 
+function matchesRoute(pathname: string, base: string): boolean {
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
 export function getDashboardNav(companyId: string | null): DashboardNavItem[] {
   const setup = "/companies";
 
@@ -41,16 +45,16 @@ export function isDashboardNavActive(
   companyId: string | null,
 ): boolean {
   if (label === "Overview") return pathname === "/dashboard";
-  if (label === "Assistant") return pathname.startsWith("/assistant");
-  if (!companyId) return pathname.startsWith("/companies");
+  if (label === "Assistant") return matchesRoute(pathname, "/assistant");
+  if (!companyId) return false;
 
   const base = `/companies/${companyId}`;
   if (label === "Diagnostic") {
     return (
-      pathname.startsWith(`${base}/assessment`) ||
-      pathname.startsWith(`${base}/results`)
+      matchesRoute(pathname, `${base}/assessment`) ||
+      matchesRoute(pathname, `${base}/results`)
     );
   }
-  if (label === "Valuation") return pathname.startsWith(`${base}/valuation`);
-  return pathname.startsWith(`${base}/roadmap`);
+  if (label === "Valuation") return matchesRoute(pathname, `${base}/valuation`);
+  return matchesRoute(pathname, `${base}/roadmap`);
 }

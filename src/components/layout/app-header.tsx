@@ -88,6 +88,7 @@ export function AppHeader({
 
           <Link
             href="/dashboard"
+            aria-label="IPO Compass home"
             className="flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
           >
             <BrandMark decorative priority className="w-8 sm:w-9" />
