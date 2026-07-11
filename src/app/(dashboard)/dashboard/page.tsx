@@ -194,7 +194,31 @@ export default async function DashboardPage() {
               Presentation of frozen readiness
             </span>
           </div>
-          <MarketTrajectory stages={snapshot.trajectory.stages} />
+          {assessment.kind === "available" ? (
+            <MarketTrajectory stages={snapshot.trajectory.stages} />
+          ) : (
+            <div className="border-t border-border bg-card p-5">
+              {assessment.kind === "in_progress" ? (
+                <SnapshotState
+                  title="Complete the route baseline"
+                  description={`${assessment.answered} of ${assessment.total} questions answered. Finish the diagnostic before a route-to-market position is shown.`}
+                  action={moduleAction(assessmentHref, "Continue diagnostic")}
+                />
+              ) : assessment.kind === "unavailable" ? (
+                <SnapshotState
+                  title="Rebuild the route baseline"
+                  description="The stored assessment snapshot is incomplete, so no route-to-market position is shown. Complete a new assessment to restore it."
+                  action={moduleAction(assessmentHref, "Reassess")}
+                />
+              ) : (
+                <SnapshotState
+                  title="Establish the route baseline"
+                  description="Complete the diagnostic before the cockpit places the company on its route to market."
+                  action={moduleAction(assessmentHref, "Start diagnostic")}
+                />
+              )}
+            </div>
+          )}
         </div>
       </InstrumentPanel>
 
@@ -239,13 +263,31 @@ export default async function DashboardPage() {
           title="Priority signals"
           action={moduleAction(roadmapHref, "View roadmap")}
         >
-          {snapshot.priorities.length > 0 ? (
+          {assessment.kind === "available" && snapshot.priorities.length > 0 ? (
             <PrioritySignalList companyId={company.id} items={snapshot.priorities} />
+          ) : assessment.kind === "unavailable" ? (
+            <SnapshotState
+              title="Rebuild the diagnostic snapshot"
+              description="The stored assessment is incomplete, so its priority signals are unavailable. Complete a new assessment before using these actions."
+              action={moduleAction(assessmentHref, "Reassess")}
+            />
+          ) : assessment.kind === "in_progress" ? (
+            <SnapshotState
+              title="Finish the diagnostic"
+              description={`${assessment.answered} of ${assessment.total} questions answered. Priority signals appear after the assessment is complete.`}
+              action={moduleAction(assessmentHref, "Continue diagnostic")}
+            />
+          ) : assessment.kind === "missing" ? (
+            <SnapshotState
+              title="Complete the diagnostic first"
+              description="Priority actions are derived from completed assessment evidence."
+              action={moduleAction(assessmentHref, "Start diagnostic")}
+            />
           ) : (
             <SnapshotState
-              title={hasAssessment ? "Review the action plan" : "Complete the diagnostic first"}
-              description={hasAssessment ? "No unfinished priority signals are available in this snapshot. Open the roadmap to generate or review the next actions." : "Priority actions are derived from completed assessment evidence."}
-              action={moduleAction(hasAssessment ? roadmapHref : assessmentHref, hasAssessment ? "Open roadmap" : "Open diagnostic")}
+              title="Review the action plan"
+              description="No unfinished priority signals are available in this snapshot. Open the roadmap to generate or review the next actions."
+              action={moduleAction(roadmapHref, "Open roadmap")}
             />
           )}
         </InstrumentPanel>

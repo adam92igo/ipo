@@ -111,7 +111,9 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await expect(page.getByText("Route to market")).toBeVisible();
   await expect(page.getByText("Indicative equity value")).toBeVisible();
   await expect(page.getByRole("list", { name: "Route to market" })).toBeVisible();
-  await expect(page.getByText("Smoke Test SAS")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Smoke Test SAS", level: 1 }),
+  ).toBeVisible();
 
   // Assistant: degraded mode without an AI key — banner shown, no chat, no API call
   await page.goto("/assistant");
