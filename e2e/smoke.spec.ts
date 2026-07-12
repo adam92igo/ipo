@@ -163,4 +163,25 @@ test("IPO readiness journey end to end", async ({ page }) => {
     page.getByPlaceholder("Ask about prospectus requirements, markets, governance…"),
   ).toHaveCount(0);
   expect(apiRequests).toHaveLength(0);
+
+  // Mobile shell: compact navigation remains accessible without page overflow
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dashboard");
+  const menuButton = page.getByRole("button", { name: "Open navigation" });
+  await expect(menuButton).toBeVisible();
+  await menuButton.click();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Overview", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Diagnostic", exact: true }),
+  ).toBeVisible();
+  const documentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(documentWidth).toBeLessThanOrEqual(390);
 });
