@@ -1,9 +1,9 @@
 "use client";
 
-import { Compass } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,14 +54,23 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted p-6">
-      <Card className="w-full max-w-md">
+    <div className="workspace-grid relative flex min-h-svh items-center justify-center overflow-hidden bg-muted p-6">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-accent" />
+      <Card className="instrument-panel w-full max-w-md p-0">
         <CardHeader className="space-y-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-            <Compass className="size-5 text-white" />
+          <div className="flex items-center gap-3 border-b border-border pb-5">
+            <BrandMark priority className="w-12" />
+            <div>
+              <span className="block font-heading text-xl font-extrabold uppercase leading-none tracking-wide text-primary">
+                IPO Compass
+              </span>
+              <span className="mt-1 block font-utility text-[0.5625rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                IPO readiness command
+              </span>
+            </div>
           </div>
           <SectionLabel>One last step</SectionLabel>
-          <CardTitle className="text-2xl font-bold text-primary">
+          <CardTitle className="font-heading text-3xl font-extrabold uppercase tracking-tight text-primary">
             Create your organization
           </CardTitle>
           <CardDescription>

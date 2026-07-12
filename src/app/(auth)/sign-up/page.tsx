@@ -37,7 +37,9 @@ export default function SignUpPage() {
     <div className="space-y-8">
       <div className="space-y-2">
         <SectionLabel>Get started</SectionLabel>
-        <h1 className="text-3xl font-bold text-primary">Create your account</h1>
+        <h1 className="font-heading text-4xl font-extrabold uppercase tracking-tight text-primary">
+          Create your account
+        </h1>
         <p className="text-sm text-muted-foreground">
           Then set up your organization&apos;s workspace.
         </p>

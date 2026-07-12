@@ -1,6 +1,6 @@
 import { TriangleAlert } from "lucide-react";
-import { SectionLabel } from "@/components/section-label";
-import { Card, CardContent } from "@/components/ui/card";
+import { InstrumentPanel } from "@/components/layout/instrument-panel";
+import { PageHeading } from "@/components/layout/page-heading";
 import { isAiConfigured } from "@/lib/ai/config";
 import { listCompanies } from "@/lib/data-access/companies";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
@@ -13,20 +13,21 @@ export default async function AssistantPage() {
   const companies = await listCompanies(ctx);
 
   return (
-    <div className="mx-auto flex h-full max-w-3xl flex-col gap-6">
-      <div className="space-y-1">
-        <SectionLabel>AI assistant</SectionLabel>
-        <h1 className="text-3xl font-bold text-primary">IPO Assistant</h1>
-        <p className="text-muted-foreground">
-          Answers about the IPO process, tailored to your company&apos;s readiness
-          data.
-        </p>
-      </div>
+    <div className="mx-auto flex h-full max-w-4xl flex-col gap-6">
+      <PageHeading
+        eyebrow="Guidance channel"
+        title="IPO Assistant"
+        description="Answers about the IPO process, tailored to your company’s readiness data."
+      />
 
       {!isAiConfigured() ? (
-        <Card className="border-dashed">
-          <CardContent className="flex items-start gap-3 pt-6">
-            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-primary" />
+        <InstrumentPanel
+          eyebrow="Assistant status"
+          title="Offline channel"
+          className="border-dashed"
+        >
+          <div className="flex items-start gap-3 border-t border-border pt-5">
+            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-accent" />
             <div className="space-y-1 text-sm">
               <p className="font-semibold text-primary">AI is not configured yet</p>
               <p className="text-muted-foreground">
@@ -37,13 +38,19 @@ export default async function AssistantPage() {
                 then restart the server.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </InstrumentPanel>
       ) : (
         <AssistantChat
           companies={companies.map((c) => ({ id: c.id, name: c.name }))}
         />
       )}
+      <p className="font-sans text-xs text-muted-foreground">
+        Educational guidance only — not investment advice.{" "}
+        <span className="font-semibold text-primary">
+          Deterministic scores and valuations remain unchanged.
+        </span>
+      </p>
     </div>
   );
 }

@@ -28,6 +28,8 @@ test("IPO readiness journey end to end", async ({ page }) => {
 
   // Sign up
   await page.goto("/sign-up");
+  await expect(page.getByRole("img", { name: "IPO Compass" })).toBeVisible();
+  await expect(page.getByText("Navigate. Prepare. Go public.")).toBeVisible();
   await page.getByLabel("Full name").fill("E2E Tester");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill("SmokeTest1234!");
@@ -140,6 +142,10 @@ test("IPO readiness journey end to end", async ({ page }) => {
 
   // Assistant: degraded mode without an AI key — banner shown, no chat, no API call
   await page.goto("/assistant");
+  await expect(page.getByRole("heading", { name: "IPO Assistant" })).toBeVisible();
+  await expect(
+    page.getByText("Deterministic scores and valuations remain unchanged."),
+  ).toBeVisible();
   await expect(page.getByText("AI is not configured yet")).toBeVisible();
   await expect(
     page.getByPlaceholder("Ask about prospectus requirements, markets, governance…"),
