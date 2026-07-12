@@ -18,8 +18,8 @@ import type { RoadmapItem, RoadmapItemStatus } from "@/lib/data-access/roadmap";
 import { generateRoadmapAction, updateRoadmapItemStatusAction } from "./actions";
 
 const PRIORITY_STYLES: Record<string, string> = {
-  critical: "border-destructive/60 text-destructive",
-  high: "border-primary/60 text-primary",
+  critical: "border-destructive text-destructive",
+  high: "border-accent bg-accent/10 text-primary",
   medium: "border-muted-foreground/50 text-muted-foreground",
   low: "border-muted-foreground/30 text-muted-foreground",
 };
@@ -84,48 +84,70 @@ export function RoadmapItemCard({
   }
 
   return (
-    <Card className={cn(item.status === "done" && "opacity-60")}>
-      <CardContent className="flex flex-wrap items-start gap-4 pt-6">
-        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-          {index + 1}
-        </span>
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <p
+    <li className="list-none">
+      <Card
+        className={cn(
+          "border-l-4",
+          item.status === "done"
+            ? "border-l-success"
+            : item.status === "in_progress"
+              ? "border-l-accent"
+              : item.priority === "critical"
+                ? "border-l-destructive"
+                : "border-l-border",
+        )}
+      >
+        <CardContent className="grid gap-4 pt-6 sm:grid-cols-[2.5rem_1fr_auto] sm:items-start">
+          <span
             className={cn(
-              "font-semibold leading-snug",
-              item.status === "done" && "line-through",
+              "grid size-9 shrink-0 place-items-center border font-utility text-[0.6875rem] font-semibold tabular-nums",
+              item.status === "done"
+                ? "border-success bg-success text-success-foreground"
+                : item.status === "in_progress"
+                  ? "border-accent bg-accent text-accent-foreground"
+                  : "border-primary/30 bg-primary/5 text-primary",
             )}
           >
-            {item.title}
-          </p>
-          <p className="text-sm text-muted-foreground">{item.description}</p>
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Badge variant="outline" className={cn("uppercase", PRIORITY_STYLES[item.priority])}>
-              {item.priority}
-            </Badge>
-            <Badge variant="outline" className="uppercase">
-              {item.category}
-            </Badge>
-            {item.estimatedWeeks !== null && (
-              <span className="text-xs text-muted-foreground">
-                ~{item.estimatedWeeks} weeks
-              </span>
-            )}
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div className="min-w-0 space-y-2">
+            <p
+              className={cn(
+                "font-heading text-lg font-bold uppercase leading-snug tracking-wide text-primary",
+                item.status === "done" && "text-success line-through decoration-success/60",
+              )}
+            >
+              {item.title}
+            </p>
+            <p className="text-sm text-muted-foreground">{item.description}</p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Badge variant="outline" className={cn("uppercase", PRIORITY_STYLES[item.priority])}>
+                {item.priority}
+              </Badge>
+              <Badge variant="outline" className="uppercase">
+                {item.category}
+              </Badge>
+              {item.estimatedWeeks !== null && (
+                <span className="font-utility text-[0.6875rem] text-muted-foreground">
+                  ~{item.estimatedWeeks} weeks
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-        <Select value={item.status} onValueChange={handleStatus} disabled={pending}>
-          <SelectTrigger className="w-36" aria-label={`Status of: ${item.title}`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </CardContent>
-    </Card>
+          <Select value={item.status} onValueChange={handleStatus} disabled={pending}>
+            <SelectTrigger className="w-36" aria-label={`Status of: ${item.title}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+    </li>
   );
 }

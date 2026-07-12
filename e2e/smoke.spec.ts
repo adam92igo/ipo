@@ -113,12 +113,21 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await expect(page.getByText("2025").first()).toBeVisible();
   await page.getByRole("button", { name: "Run valuation" }).click();
   await expect(page.getByText("Estimated equity value")).toBeVisible();
-  await expect(page.getByText(/Midpoint €/)).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Indicative equity range" }),
+  ).toBeVisible();
+  await expect(page.getByText("Low", { exact: true })).toBeVisible();
+  await expect(page.getByText("Midpoint", { exact: true })).toBeVisible();
+  await expect(page.getByText("High", { exact: true })).toBeVisible();
 
   // Roadmap: generate from the completed assessment
   await page.goto(`/companies/${companyId}/roadmap`);
   await page.getByRole("button", { name: "Generate roadmap" }).click();
   await expect(page.getByText(/of \d+ steps done/)).toBeVisible();
+  await expect(
+    page.getByRole("list", { name: "IPO preparation roadmap" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Rules v\d/)).toBeVisible();
 
   // Overview cockpit: persisted readiness, valuation and route are visible
   await page.goto("/dashboard");

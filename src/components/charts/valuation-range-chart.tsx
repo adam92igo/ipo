@@ -1,10 +1,9 @@
 import { formatEurCompact } from "@/lib/format";
 
 /**
- * Single-hue range chart: one row per valuation method (low—high segment with
- * a mid marker) plus an emphasized aggregated row. Marks use the cockpit's
- * direction token; identity comes from row labels and values are directly
- * labeled, so color never carries meaning alone.
+ * One row per valuation method (low—high segment with a mid marker) plus an
+ * emphasized aggregated row. Navy, gold and steel establish hierarchy; labels
+ * and direct values ensure color never carries meaning alone.
  */
 interface RangeRow {
   label: string;
@@ -34,7 +33,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
       aria-label={`Valuation ranges: ${rows
         .map((r) => `${r.label} ${formatEurCompact(r.low)} to ${formatEurCompact(r.high)}`)
         .join(", ")}`}
-      className="w-full"
+      className="w-full font-utility tabular-nums"
     >
       {rows.map((row, i) => {
         const cy = i * ROW_H + ROW_H / 2 + 6;
@@ -66,7 +65,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               x2={x(row.high)}
               y1={cy}
               y2={cy}
-              stroke="var(--color-direction, var(--color-primary))"
+              stroke={row.emphasis ? "var(--color-primary)" : "var(--color-chart-5)"}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               opacity={row.emphasis ? 1 : 0.55}
@@ -78,7 +77,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               cx={x(row.mid)}
               cy={cy}
               r={row.emphasis ? 6 : 4.5}
-              fill="var(--color-direction, var(--color-primary))"
+              fill={row.emphasis ? "var(--color-accent)" : "var(--color-primary)"}
               stroke="var(--background)"
               strokeWidth={2}
             >

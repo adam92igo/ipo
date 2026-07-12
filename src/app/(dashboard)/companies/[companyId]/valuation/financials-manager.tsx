@@ -69,6 +69,7 @@ function YearForm({
           max={2100}
           value={fiscalYear}
           onChange={(e) => setFiscalYear(e.target.value)}
+          className="font-utility tabular-nums"
           readOnly={year !== null}
           required
         />
@@ -90,6 +91,7 @@ function YearForm({
               type="number"
               step="any"
               defaultValue={year?.[metric.name] ?? ""}
+              className="font-utility tabular-nums"
             />
             <FieldError errors={state.fieldErrors?.[metric.name]} />
           </div>
@@ -163,11 +165,11 @@ export function FinancialsManager({
             <tbody>
               {financials.map((year) => (
                 <tr key={year.fiscalYear} className="border-b last:border-0">
-                  <td className="py-2 pr-4 font-semibold text-primary">
+                  <td className="py-2 pr-4 font-utility font-semibold tabular-nums text-primary">
                     {year.fiscalYear}
                   </td>
                   {METRICS.map((m) => (
-                    <td key={m.name} className="py-2 pr-4 text-right tabular-nums">
+                    <td key={m.name} className="py-2 pr-4 text-right font-utility tabular-nums">
                       {year[m.name] === null ? (
                         <span className="text-muted-foreground">—</span>
                       ) : (
