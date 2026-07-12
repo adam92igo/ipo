@@ -27,9 +27,15 @@ test("IPO readiness journey end to end", async ({ page }) => {
   });
 
   // Sign up
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/sign-up");
   await expect(page.getByRole("img", { name: "IPO Compass" })).toBeVisible();
-  await expect(page.getByText("Navigate. Prepare. Go public.")).toBeVisible();
+  await expect(
+    page.getByRole("paragraph").filter({
+      hasText: /^Navigate\. Prepare\. Go public\.$/,
+    }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.getByLabel("Full name").fill("E2E Tester");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill("SmokeTest1234!");
@@ -48,6 +54,11 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await page.getByLabel("Sector *").fill("Software");
   await page.getByRole("button", { name: "Add company", exact: true }).click();
   await expect(page.getByRole("main").getByText("Smoke Test SAS")).toBeVisible();
+  const companyProfile = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Company details" }),
+  });
+  const websiteField = companyProfile.getByText("Official website", { exact: true }).locator("..");
+  await expect(websiteField).toContainText("Not provided");
 
   await page.goto("/dashboard");
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();

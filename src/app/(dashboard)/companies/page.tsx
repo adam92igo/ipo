@@ -103,9 +103,9 @@ function CompanyProfile({
           </div>
         ))}
       </dl>
-      {company.website && (
-        <div className="border-t border-border px-5 py-4 text-sm">
-          <span className="instrument-label mr-3">Official website</span>
+      <div className="border-t border-border px-5 py-4 text-sm">
+        <span className="instrument-label mr-3">Official website</span>
+        {company.website ? (
           <a
             href={company.website}
             target="_blank"
@@ -114,8 +114,10 @@ function CompanyProfile({
           >
             {company.website}
           </a>
-        </div>
-      )}
+        ) : (
+          <span className="text-muted-foreground">Not provided</span>
+        )}
+      </div>
       <div className="flex flex-col gap-4 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         {completed ? (
           <div className="flex items-center gap-2">

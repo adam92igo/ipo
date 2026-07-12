@@ -59,7 +59,7 @@ export default function OnboardingPage() {
       <Card className="instrument-panel w-full max-w-md p-0">
         <CardHeader className="space-y-3">
           <div className="flex items-center gap-3 border-b border-border pb-5">
-            <BrandMark priority className="w-12" />
+            <BrandMark decorative priority className="w-12" />
             <div>
               <span className="block font-heading text-xl font-extrabold uppercase leading-none tracking-wide text-primary">
                 IPO Compass

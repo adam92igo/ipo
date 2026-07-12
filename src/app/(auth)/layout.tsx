@@ -12,8 +12,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute -bottom-16 -right-10 h-72 w-[34rem] bg-white/[0.035] [clip-path:polygon(20%_0,100%_0,100%_100%,0_100%)]" />
         </div>
         <div className="relative flex items-center gap-4">
-          <BrandMark priority className="w-16" />
-          <div>
+          <BrandMark decorative priority className="w-16" />
+          <div aria-hidden="true">
             <span className="block font-heading text-2xl font-extrabold uppercase leading-none tracking-wide">
               IPO Compass
             </span>
@@ -40,7 +40,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
       {/* Form panel */}
       <div className="workspace-grid flex items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-sm">{children}</div>
+        <div className="w-full max-w-sm">
+          <div className="mb-8 border-b border-border pb-5 lg:hidden">
+            <div className="flex items-center gap-3">
+              <BrandMark priority className="w-12" />
+              <span
+                aria-hidden="true"
+                className="font-heading text-xl font-extrabold uppercase tracking-wide text-primary"
+              >
+                IPO Compass
+              </span>
+            </div>
+            <p className="mt-3 border-l-4 border-accent pl-3 font-heading text-2xl font-extrabold uppercase leading-none text-primary">
+              Navigate. Prepare. Go public.
+            </p>
+          </div>
+          {children}
+        </div>
       </div>
     </div>
   );
