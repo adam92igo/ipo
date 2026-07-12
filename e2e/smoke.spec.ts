@@ -36,6 +36,7 @@ test("IPO readiness journey end to end", async ({ page }) => {
     }),
   ).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(page.getByRole("img", { name: "IPO Compass" })).toBeVisible();
   await page.getByLabel("Full name").fill("E2E Tester");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill("SmokeTest1234!");

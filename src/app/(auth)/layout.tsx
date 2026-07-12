@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute -bottom-16 -right-10 h-72 w-[34rem] bg-white/[0.035] [clip-path:polygon(20%_0,100%_0,100%_100%,0_100%)]" />
         </div>
         <div className="relative flex items-center gap-4">
-          <BrandMark decorative priority className="w-16" />
+          <BrandMark priority className="w-16" />
           <div aria-hidden="true">
             <span className="block font-heading text-2xl font-extrabold uppercase leading-none tracking-wide">
               IPO Compass
