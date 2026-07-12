@@ -24,3 +24,31 @@ export function getLowValueLabelPlacement(valueX: number): {
     textAnchor: "end",
   };
 }
+
+export interface RangeValueLabelPlacement {
+  value: "low" | "high";
+  x: number;
+  yOffset: number;
+  textAnchor: "start" | "end";
+}
+
+export function getRangeValueLabelPlacements(
+  lowX: number,
+  highX: number,
+  collapsed: boolean,
+): RangeValueLabelPlacement[] {
+  const lowPlacement = getLowValueLabelPlacement(lowX);
+
+  if (collapsed) {
+    return [{ value: "low", yOffset: -10, ...lowPlacement }];
+  }
+
+  return [
+    { value: "low", yOffset: 18, ...lowPlacement },
+    {
+      value: "high",
+      yOffset: -10,
+      ...getLowValueLabelPlacement(highX),
+    },
+  ];
+}

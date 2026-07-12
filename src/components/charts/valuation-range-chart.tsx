@@ -1,6 +1,6 @@
 import { formatEurCompact } from "@/lib/format";
 import {
-  getLowValueLabelPlacement,
+  getRangeValueLabelPlacements,
   VALUATION_RANGE_CHART_LAYOUT,
 } from "./valuation-range-chart-layout";
 
@@ -46,7 +46,11 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
         {rows.map((row, i) => {
           const cy = i * ROW_H + ROW_H / 2 + 6;
           const strokeWidth = row.emphasis ? 10 : 6;
-          const lowLabel = getLowValueLabelPlacement(x(row.low));
+          const valueLabels = getRangeValueLabelPlacements(
+            x(row.low),
+            x(row.high),
+            row.low === row.high,
+          );
           return (
             <g key={row.label}>
               <text
@@ -93,24 +97,19 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
                 <title>{`Mid: ${formatEurCompact(row.mid)}`}</title>
               </circle>
               {/* Direct value labels (text tokens) */}
-              <text
-                x={lowLabel.x}
-                y={cy - 10}
-                textAnchor={lowLabel.textAnchor}
-                fontSize={11.5}
-                className="fill-muted-foreground"
-              >
-                {formatEurCompact(row.low)}
-              </text>
-              <text
-                x={x(row.high) + 6}
-                y={cy - 10}
-                fontSize={11.5}
-                fontWeight={row.emphasis ? 700 : 400}
-                className={row.emphasis ? "fill-foreground" : "fill-muted-foreground"}
-              >
-                {formatEurCompact(row.high)}
-              </text>
+              {valueLabels.map((label) => (
+                <text
+                  key={label.value}
+                  x={label.x}
+                  y={cy + label.yOffset}
+                  textAnchor={label.textAnchor}
+                  fontSize={11.5}
+                  fontWeight={row.emphasis ? 700 : 400}
+                  className={row.emphasis ? "fill-foreground" : "fill-muted-foreground"}
+                >
+                  {formatEurCompact(row[label.value])}
+                </text>
+              ))}
             </g>
           );
         })}

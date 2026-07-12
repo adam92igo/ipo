@@ -10,6 +10,20 @@ const getLowValueLabelPlacement = (
     ) => { x: number; textAnchor: "start" | "end" };
   }
 ).getLowValueLabelPlacement;
+const getRangeValueLabelPlacements = (
+  layoutModule as typeof layoutModule & {
+    getRangeValueLabelPlacements?: (
+      lowX: number,
+      highX: number,
+      collapsed: boolean,
+    ) => Array<{
+      value: "low" | "high";
+      x: number;
+      yOffset: number;
+      textAnchor: "start" | "end";
+    }>;
+  }
+).getRangeValueLabelPlacements;
 
 describe("valuation range chart layout", () => {
   it("reserves readable label and track geometry at its minimum CSS width", () => {
@@ -71,5 +85,65 @@ describe("valuation range chart layout", () => {
     expect(placement?.x).toBeGreaterThan(
       VALUATION_RANGE_CHART_LAYOUT.labelWidth,
     );
+  });
+
+  it("returns one direct value annotation for a collapsed range", () => {
+    const valueX = VALUATION_RANGE_CHART_LAYOUT.labelWidth + 120;
+
+    expect(getRangeValueLabelPlacements?.(valueX, valueX, true)).toEqual([
+      {
+        value: "low",
+        x: valueX + VALUE_LABEL_GAP,
+        yOffset: -10,
+        textAnchor: "start",
+      },
+    ]);
+  });
+
+  it("separates narrow range annotations onto distinct vertical lanes", () => {
+    const lowX = VALUATION_RANGE_CHART_LAYOUT.labelWidth + 120;
+    const placements = getRangeValueLabelPlacements?.(lowX, lowX + 1, false);
+
+    expect(placements).toHaveLength(2);
+    expect(
+      placements?.map(({ value, yOffset }) => ({ value, yOffset })),
+    ).toEqual([
+      { value: "low", yOffset: 18 },
+      { value: "high", yOffset: -10 },
+    ]);
+    expect(placements?.[0]?.yOffset).not.toBe(placements?.[1]?.yOffset);
+  });
+
+  it("keeps a high annotation at the track end inside the SVG", () => {
+    const trackEnd =
+      VALUATION_RANGE_CHART_LAYOUT.width -
+      VALUATION_RANGE_CHART_LAYOUT.padRight;
+    const placements = getRangeValueLabelPlacements?.(
+      VALUATION_RANGE_CHART_LAYOUT.labelWidth + 120,
+      trackEnd,
+      false,
+    );
+
+    expect(placements?.[1]).toEqual({
+      value: "high",
+      x: trackEnd - VALUE_LABEL_GAP,
+      yOffset: -10,
+      textAnchor: "end",
+    });
+    expect(placements?.[1]?.x).toBeLessThan(
+      VALUATION_RANGE_CHART_LAYOUT.width,
+    );
+  });
+
+  it("keeps distinct raw values separate when their projected coordinates match", () => {
+    const projectedX = VALUATION_RANGE_CHART_LAYOUT.labelWidth + 120;
+    const placements = getRangeValueLabelPlacements?.(
+      projectedX,
+      projectedX,
+      false,
+    );
+
+    expect(placements).toHaveLength(2);
+    expect(placements?.map(({ value }) => value)).toEqual(["low", "high"]);
   });
 });
