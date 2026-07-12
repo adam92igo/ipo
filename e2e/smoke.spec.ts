@@ -75,8 +75,11 @@ test("IPO readiness journey end to end", async ({ page }) => {
     ["Reporting", 20],
   ];
   const grandTotal = categoryTotals.reduce((sum, [, total]) => sum + total, 0);
-  for (const [, total] of categoryTotals) {
+  for (const [categoryLabel, total] of categoryTotals) {
     await answerAllVisibleQuestions(page, total);
+    await expect(
+      page.getByRole("button", { name: `${categoryLabel} section`, exact: true }),
+    ).toHaveAccessibleDescription("Complete");
     const nextButton = page.getByRole("button", { name: "Next", exact: true });
     if (await nextButton.isVisible()) {
       await nextButton.click();
@@ -95,6 +98,8 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await expect(page.getByText("Readiness signals")).toBeVisible();
   await expect(page.getByRole("img", { name: /Readiness radar/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Category scores" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Strengths" })).toHaveCount(1);
+  await expect(page.getByRole("list", { name: "Weaknesses" })).toHaveCount(1);
 
   // Valuation: add a fiscal year, then run the valuation
   await page.getByRole("link", { name: "Build the roadmap" }).click();

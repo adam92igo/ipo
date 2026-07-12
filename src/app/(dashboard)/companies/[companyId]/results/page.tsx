@@ -110,7 +110,7 @@ export default async function ResultsPage({
 
       <InstrumentPanel className="p-0">
         <div className="grid lg:grid-cols-[0.8fr_1.5fr]">
-          <section className="flex min-h-64 items-center border-b border-border p-6 lg:border-b-0 lg:border-r">
+          <div className="flex min-h-64 items-center border-b border-border p-6 lg:border-b-0 lg:border-r">
             <div>
               <p className="instrument-label">Readiness bearing</p>
               <div className="mt-5">
@@ -121,7 +121,7 @@ export default async function ResultsPage({
                 category scores recorded at completion.
               </p>
             </div>
-          </section>
+          </div>
 
           <section className="p-6">
             <p className="instrument-label">Assessment evidence</p>
@@ -162,18 +162,32 @@ export default async function ResultsPage({
             </span>
           }
         >
-          <div className="divide-y divide-border border-y border-border">
+          <div>
             {strengths.length === 0 && (
-              <p className="py-4 text-sm text-muted-foreground">
+              <p className="border-y border-border py-4 text-sm text-muted-foreground">
                 No category reaches the strength threshold yet.
               </p>
             )}
-            {strengths.map((s) => (
-              <div key={s.id} className="flex items-center justify-between gap-4 py-3">
-                <span className="text-sm font-semibold">{s.label}</span>
-                <span className="font-utility text-sm font-semibold text-success">{s.score}%</span>
-              </div>
-            ))}
+            <ul
+              aria-label="Strengths"
+              className={
+                strengths.length > 0
+                  ? "divide-y divide-border border-y border-border"
+                  : undefined
+              }
+            >
+              {strengths.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-4 py-3"
+                >
+                  <span className="text-sm font-semibold">{s.label}</span>
+                  <span className="font-utility text-sm font-semibold text-success">
+                    {s.score}%
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </InstrumentPanel>
         <InstrumentPanel
@@ -184,18 +198,32 @@ export default async function ResultsPage({
             </span>
           }
         >
-          <div className="divide-y divide-border border-y border-border">
+          <div>
             {weaknesses.length === 0 && (
-              <p className="py-4 text-sm text-muted-foreground">
+              <p className="border-y border-border py-4 text-sm text-muted-foreground">
                 No category falls below the weakness threshold.
               </p>
             )}
-            {weaknesses.map((w) => (
-              <div key={w.id} className="flex items-center justify-between gap-4 py-3">
-                <span className="text-sm font-semibold">{w.label}</span>
-                <span className="font-utility text-sm font-semibold text-destructive">{w.score}%</span>
-              </div>
-            ))}
+            <ul
+              aria-label="Weaknesses"
+              className={
+                weaknesses.length > 0
+                  ? "divide-y divide-border border-y border-border"
+                  : undefined
+              }
+            >
+              {weaknesses.map((w) => (
+                <li
+                  key={w.id}
+                  className="flex items-center justify-between gap-4 py-3"
+                >
+                  <span className="text-sm font-semibold">{w.label}</span>
+                  <span className="font-utility text-sm font-semibold text-destructive">
+                    {w.score}%
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </InstrumentPanel>
       </div>

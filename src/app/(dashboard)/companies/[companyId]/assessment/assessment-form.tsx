@@ -227,6 +227,7 @@ export function AssessmentForm({
               type="button"
               onClick={() => setStep(i)}
               aria-label={`${c.label} section`}
+              aria-describedby={done ? `${c.id}-section-status` : undefined}
               aria-current={i === step ? "step" : undefined}
               className={cn(
                 "relative flex min-w-28 items-center justify-center gap-1.5 border-b-2 px-4 py-3 font-heading text-sm font-bold uppercase tracking-[0.12em] transition-colors focus-visible:ring-2 focus-visible:ring-ring",
@@ -239,7 +240,10 @@ export function AssessmentForm({
               <span>{String(i + 1).padStart(2, "0")}</span>
               {c.label}
               {done && (
-                <span className="font-utility text-[0.5rem] tracking-wider">
+                <span
+                  id={`${c.id}-section-status`}
+                  className="font-utility text-[0.5rem] tracking-wider"
+                >
                   Complete
                 </span>
               )}
