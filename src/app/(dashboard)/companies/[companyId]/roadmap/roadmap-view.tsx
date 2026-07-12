@@ -18,7 +18,7 @@ import type { RoadmapItem, RoadmapItemStatus } from "@/lib/data-access/roadmap";
 import { generateRoadmapAction, updateRoadmapItemStatusAction } from "./actions";
 
 const PRIORITY_STYLES: Record<string, string> = {
-  critical: "border-destructive text-destructive",
+  critical: "border-destructive bg-destructive/5 text-primary",
   high: "border-accent bg-accent/10 text-primary",
   medium: "border-muted-foreground/50 text-muted-foreground",
   low: "border-muted-foreground/30 text-muted-foreground",

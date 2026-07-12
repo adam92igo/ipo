@@ -77,7 +77,7 @@ export default async function ValuationPage({
         <>
           <section aria-label="Indicative equity range">
             <InstrumentPanel className="p-0">
-              <div className="grid lg:grid-cols-[0.85fr_1.4fr]">
+              <div className="grid lg:grid-cols-[0.65fr_1.55fr]">
                 <div className="flex min-h-72 items-center border-b border-border p-6 lg:border-b-0 lg:border-r">
                   <div className="w-full">
                     <p className="instrument-label">Estimated equity value</p>
