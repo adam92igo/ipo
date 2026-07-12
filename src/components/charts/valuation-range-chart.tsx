@@ -1,5 +1,8 @@
 import { formatEurCompact } from "@/lib/format";
-import { VALUATION_RANGE_CHART_LAYOUT } from "./valuation-range-chart-layout";
+import {
+  getLowValueLabelPlacement,
+  VALUATION_RANGE_CHART_LAYOUT,
+} from "./valuation-range-chart-layout";
 
 /**
  * One row per valuation method (low—high segment with a mid marker) plus an
@@ -30,7 +33,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
   const height = rows.length * ROW_H + 12;
 
   return (
-    <div className="overflow-x-auto pb-2">
+    <div className="min-w-0 overflow-x-auto pb-2">
       <svg
         viewBox={`0 0 ${WIDTH} ${height}`}
         role="img"
@@ -43,6 +46,7 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
         {rows.map((row, i) => {
           const cy = i * ROW_H + ROW_H / 2 + 6;
           const strokeWidth = row.emphasis ? 10 : 6;
+          const lowLabel = getLowValueLabelPlacement(x(row.low));
           return (
             <g key={row.label}>
               <text
@@ -90,9 +94,9 @@ export function ValuationRangeChart({ rows }: { rows: RangeRow[] }) {
               </circle>
               {/* Direct value labels (text tokens) */}
               <text
-                x={x(row.low) - 6}
+                x={lowLabel.x}
                 y={cy - 10}
-                textAnchor="end"
+                textAnchor={lowLabel.textAnchor}
                 fontSize={11.5}
                 className="fill-muted-foreground"
               >

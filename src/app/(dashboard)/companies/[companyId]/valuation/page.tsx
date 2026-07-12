@@ -102,12 +102,12 @@ export default async function ValuationPage({
                     </p>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="min-w-0 p-6">
                   <p className="instrument-label">Method bands</p>
                   <h2 className="mt-1 font-heading text-xl font-extrabold uppercase tracking-wide text-primary">
                     Range by method
                   </h2>
-                  <div className="mt-5">
+                  <div className="mt-5 min-w-0">
                     <ValuationRangeChart
                       rows={[
                         ...results.methods.map((m) => ({
