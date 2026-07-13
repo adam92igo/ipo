@@ -1,0 +1,18 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+import { BrandMark } from "./brand-mark";
+
+describe("BrandMark", () => {
+  it("uses the approved transparent asset through Next image optimization", () => {
+    const html = renderToStaticMarkup(createElement(BrandMark));
+    expect(decodeURIComponent(html)).toContain("/brand/ipo-compass-mark.png");
+    expect(html).toContain('src="/_next/image?url=');
+    expect(html).toContain('alt="IPO Compass"');
+  });
+
+  it("can be decorative when the adjacent wordmark names the brand", () => {
+    const html = renderToStaticMarkup(createElement(BrandMark, { decorative: true }));
+    expect(html).toContain('alt=""');
+  });
+});

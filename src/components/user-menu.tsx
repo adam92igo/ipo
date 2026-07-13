@@ -3,6 +3,7 @@
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 
 export function UserMenu({
@@ -36,38 +36,41 @@ export function UserMenu({
   }
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg">
-              <Avatar className="size-8 rounded-full bg-white/10">
-                <AvatarFallback className="bg-transparent text-xs text-white">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{userName}</span>
-                <span className="truncate text-xs text-sidebar-foreground/70">
-                  {userEmail}
-                </span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <DropdownMenuLabel className="font-normal">
-              <p className="text-sm font-semibold">{userName}</p>
-              <p className="text-xs text-muted-foreground">{userEmail}</p>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onSignOut}>
-              <LogOut />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-11 gap-2 px-2 text-primary hover:bg-muted hover:text-primary focus-visible:border-primary"
+          aria-label={`Open user menu for ${userName}`}
+        >
+          <Avatar className="size-8 rounded-full border border-border bg-muted">
+            <AvatarFallback className="bg-transparent text-xs text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="hidden max-w-28 truncate text-sm font-semibold sm:inline 2xl:hidden">
+            {userName}
+          </span>
+          <span className="hidden max-w-40 text-left text-sm leading-tight 2xl:grid">
+            <span className="truncate font-semibold">{userName}</span>
+            <span className="truncate text-xs text-muted-foreground">
+              {userEmail}
+            </span>
+          </span>
+          <ChevronsUpDown className="size-4 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="bottom" align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <p className="text-sm font-semibold">{userName}</p>
+          <p className="text-xs text-muted-foreground">{userEmail}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onSignOut}>
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -53,7 +53,9 @@ export function CreateCompanyDialog({ aiEnabled = false }: { aiEnabled?: boolean
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-primary">Add a company</DialogTitle>
+          <DialogTitle className="font-heading text-xl font-extrabold uppercase tracking-wide text-primary">
+            Add a company
+          </DialogTitle>
           <DialogDescription>
             The company you want to prepare for an IPO. Financial history comes later,
             with the valuation module.

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppHeader } from "@/components/layout/app-header";
+import { listCompanies } from "@/lib/data-access/companies";
 import { getCachedSession } from "@/lib/data-access/context";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
 
@@ -13,27 +12,18 @@ export default async function DashboardLayout({
   const session = await getCachedSession();
   if (!session) redirect("/sign-in");
   const ctx = await requireOrgPageContext();
+  const [company] = await listCompanies(ctx);
 
   return (
-    <SidebarProvider>
-      <AppSidebar
+    <div className="flex min-h-svh flex-col">
+      <AppHeader
+        company={company ?? null}
         organizationName={ctx.organizationName}
+        role={ctx.role}
         userName={session.user.name}
         userEmail={session.user.email}
       />
-      <SidebarInset>
-        <header className="flex h-14 items-center gap-3 border-b px-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="h-5" />
-          <span className="text-sm font-semibold text-primary">
-            {ctx.organizationName}
-          </span>
-          <span className="ml-auto rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {ctx.role}
-          </span>
-        </header>
-        <main className="flex-1 p-6 md:p-8">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+      <main className="workspace-grid flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+    </div>
   );
 }

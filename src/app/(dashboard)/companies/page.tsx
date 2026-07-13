@@ -1,16 +1,19 @@
-import { Building2, ClipboardCheck, Gauge } from "lucide-react";
+import { Building2, ClipboardCheck, Gauge, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { SectionLabel } from "@/components/section-label";
+import { InstrumentPanel } from "@/components/layout/instrument-panel";
+import { PageHeading } from "@/components/layout/page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { readStoredReadinessScores } from "@/lib/assessment-snapshot";
 import {
   listLatestAssessmentsByCompany,
   listLatestCompletedAssessmentsByCompany,
+  type Assessment,
 } from "@/lib/data-access/assessments";
 import { listCompanies } from "@/lib/data-access/companies";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
 import { isAiConfigured } from "@/lib/ai/config";
+import { getQuestionnaire } from "@/lib/questionnaire";
 import { CreateCompanyDialog } from "./create-company-dialog";
 
 export const metadata = { title: "Company" };
@@ -25,115 +28,152 @@ export default async function CompaniesPage() {
   const canWrite = ctx.role === "owner" || ctx.role === "admin";
   const aiConfigured = isAiConfigured();
   const hasCompany = companies.length > 0;
+  const company = companies[0];
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-1">
-          <SectionLabel>Company</SectionLabel>
-          <h1 className="text-3xl font-bold text-primary">Company</h1>
-          <p className="text-muted-foreground">
-            The company this workspace is preparing for the public markets.
-          </p>
-        </div>
-        {canWrite && !hasCompany && <CreateCompanyDialog aiEnabled={aiConfigured} />}
-      </div>
+      <PageHeading
+        eyebrow="Company profile"
+        title={company?.name ?? "Set up your company"}
+        description="The single company this workspace is preparing for the French public markets."
+        actions={
+          canWrite && !hasCompany ? (
+            <CreateCompanyDialog aiEnabled={aiConfigured} />
+          ) : undefined
+        }
+      />
 
       {!hasCompany ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-muted">
-              <Building2 className="size-6 text-primary" />
+        <InstrumentPanel className="flex flex-col items-center border-dashed py-16 text-center">
+          <div className="grid size-14 place-items-center rounded-full bg-muted">
+            <Building2 className="size-6 text-primary" />
+          </div>
+          <h2 className="mt-4 font-heading text-2xl font-extrabold uppercase tracking-wide text-primary">
+            No company profile yet
+          </h2>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+            Add your company to unlock the readiness assessment, valuation and
+            roadmap modules.
+          </p>
+          {canWrite && (
+            <div className="mt-5">
+              <CreateCompanyDialog aiEnabled={aiConfigured} />
             </div>
-            <div className="space-y-1">
-              <p className="font-semibold text-primary">No company yet</p>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                Add your company to unlock the readiness assessment, valuation and
-                roadmap modules.
-              </p>
-            </div>
-            {canWrite && <CreateCompanyDialog aiEnabled={aiConfigured} />}
-          </CardContent>
-        </Card>
+          )}
+        </InstrumentPanel>
       ) : (
-        <div className="grid gap-4">
-          {companies.map((company) => {
-            const latest = latestAssessments.get(company.id);
-            const completed = completedAssessments.get(company.id);
-            return (
-              <Card key={company.id}>
-                <CardContent className="space-y-4 pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <p className="text-lg font-bold text-primary">{company.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {company.sector}
-                        {company.headcount ? ` · ${company.headcount} employees` : ""}
-                      </p>
-                      {company.website && (
-                        <a
-                          href={company.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm text-primary underline-offset-4 hover:underline"
-                        >
-                          {company.website}
-                        </a>
-                      )}
-                    </div>
-                    <Badge variant="outline" className="uppercase">
-                      {company.country}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between border-t pt-4">
-                    {completed ? (
-                      <div className="flex items-center gap-2">
-                        <Gauge className="size-4 text-primary" />
-                        <span className="text-sm font-bold text-primary">
-                          {Math.round(Number(completed.globalScore))}% ready
-                        </span>
-                      </div>
-                    ) : latest ? (
-                      <span className="text-sm text-muted-foreground">
-                        Assessment in progress
-                      </span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        Not assessed yet
-                      </span>
-                    )}
-                    <div className="flex gap-2">
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/companies/${company.id}/valuation`}>Valuation</Link>
-                      </Button>
-                      {completed && (
-                        <>
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/companies/${company.id}/results`}>Results</Link>
-                          </Button>
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/companies/${company.id}/roadmap`}>Roadmap</Link>
-                          </Button>
-                        </>
-                      )}
-                      <Button asChild size="sm">
-                        <Link href={`/companies/${company.id}/assessment`}>
-                          <ClipboardCheck data-slot="icon" />
-                          {latest?.status === "in_progress"
-                            ? "Continue"
-                            : completed
-                              ? "Reassess"
-                              : "Assess"}
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <CompanyProfile
+          company={company}
+          latest={latestAssessments.get(company.id)}
+          completed={completedAssessments.get(company.id)}
+        />
       )}
     </div>
+  );
+}
+
+function CompanyProfile({
+  company,
+  latest,
+  completed,
+}: {
+  company: Awaited<ReturnType<typeof listCompanies>>[number];
+  latest: Assessment | undefined;
+  completed: Assessment | undefined;
+}) {
+  const storedReadiness =
+    completed && completed.completedAt
+      ? readStoredReadinessScores(
+          getQuestionnaire(completed.questionnaireVersion),
+          completed,
+        )
+      : null;
+
+  return (
+    <InstrumentPanel
+      eyebrow="Issuer record"
+      title="Company details"
+      className="p-0 [&>header]:px-5 [&>header]:pt-5"
+    >
+      <dl className="grid border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["Sector", company.sector],
+          ["Country", company.country],
+          [
+            "Headcount",
+            company.headcount ? `${company.headcount} employees` : "Not provided",
+          ],
+          ["SIREN", company.siren ?? "Not provided"],
+        ].map(([label, value]) => (
+          <div key={label} className="border-b border-border p-5 sm:border-r lg:border-b-0">
+            <dt className="instrument-label">{label}</dt>
+            <dd className="mt-2 font-heading text-lg font-bold uppercase tracking-wide text-primary">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <div className="border-t border-border px-5 py-4 text-sm">
+        <span className="instrument-label mr-3">Official website</span>
+        {company.website ? (
+          <a
+            href={company.website}
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {company.website}
+          </a>
+        ) : (
+          <span className="text-muted-foreground">Not provided</span>
+        )}
+      </div>
+      <div className="flex flex-col gap-4 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        {completed && storedReadiness ? (
+          <div className="flex items-center gap-2">
+            <Gauge className="size-4 text-primary" />
+            <span className="font-utility text-sm font-semibold text-primary">
+              {Math.round(storedReadiness.globalScore)}% ready
+            </span>
+          </div>
+        ) : completed ? (
+          <div className="flex items-center gap-2 text-destructive">
+            <TriangleAlert className="size-4" />
+            <span className="font-utility text-sm font-semibold">
+              Stored snapshot incomplete
+            </span>
+          </div>
+        ) : latest ? (
+          <Badge variant="outline">Assessment in progress</Badge>
+        ) : (
+          <Badge variant="outline">Not assessed yet</Badge>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/companies/${company.id}/valuation`}>Valuation</Link>
+          </Button>
+          {completed && (
+            <>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/companies/${company.id}/results`}>Results</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/companies/${company.id}/roadmap`}>Roadmap</Link>
+              </Button>
+            </>
+          )}
+          <Button asChild size="sm">
+            <Link href={`/companies/${company.id}/assessment`}>
+              <ClipboardCheck data-slot="icon" />
+              {latest?.status === "in_progress"
+                ? "Continue"
+                : completed
+                  ? "Reassess"
+                  : "Assess"}
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </InstrumentPanel>
   );
 }

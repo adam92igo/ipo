@@ -89,11 +89,13 @@ export function AssistantChat({
   }
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">Context:</span>
+    <div className="flex h-full flex-col gap-4 font-sans">
+      <div className="flex flex-col items-stretch gap-3 border-l-4 border-accent bg-card px-4 py-3 sm:flex-row sm:items-center">
+        <span className="font-utility text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
+          Context
+        </span>
         <Select value={companyId} onValueChange={setCompanyId}>
-          <SelectTrigger className="w-64" aria-label="Company context">
+          <SelectTrigger className="w-full sm:w-64" aria-label="Company context">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -176,10 +178,6 @@ export function AssistantChat({
           <Send data-slot="icon" /> Send
         </Button>
       </form>
-      <p className="text-xs text-muted-foreground">
-        Educational guidance only — not investment advice. Scores and valuations
-        always come from the deterministic engines.
-      </p>
     </div>
   );
 }

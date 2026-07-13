@@ -1,13 +1,8 @@
 import { Info } from "lucide-react";
+import { MetricScale } from "@/components/cockpit/metric-scale";
 import { ValuationRangeChart } from "@/components/charts/valuation-range-chart";
-import { SectionLabel } from "@/components/section-label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { InstrumentPanel } from "@/components/layout/instrument-panel";
+import { PageHeading } from "@/components/layout/page-heading";
 import { equityRangeOf, type MethodResult } from "@/engines/valuation";
 import { listFinancialsFor } from "@/lib/data-access/financials";
 import { getCompany } from "@/lib/data-access/companies";
@@ -47,120 +42,132 @@ export default async function ValuationPage({
 
   const results = latestRun ? (latestRun.results as ValuationRunResults) : null;
   const canWrite = ctx.role === "owner" || ctx.role === "admin";
+  const financialHistory = (
+    <InstrumentPanel eyebrow="Source data" title="Financial history">
+      <p className="mb-5 max-w-3xl text-sm text-muted-foreground">
+        One row per fiscal year, from the annual accounts. The valuation uses the
+        latest year and the revenue trend.
+      </p>
+      <FinancialsManager
+        companyId={company.id}
+        financials={financials}
+        canWrite={canWrite}
+      />
+    </InstrumentPanel>
+  );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-1">
-          <SectionLabel>Valuation</SectionLabel>
-          <h1 className="text-3xl font-bold text-primary">{company.name}</h1>
-          <p className="text-muted-foreground">
-            Indicative equity value from three deterministic methods — not
-            investment advice.
-          </p>
-        </div>
-        <RunValuationButton
-          companyId={company.id}
-          hasFinancials={financials.length > 0}
-          hasExistingRun={latestRun !== null}
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-primary">Financial history</CardTitle>
-          <CardDescription>
-            One row per fiscal year, from the annual accounts. The valuation uses
-            the latest year and the revenue trend.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FinancialsManager
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHeading
+        eyebrow="Valuation instrument"
+        title={company.name}
+        description="Indicative equity value from three deterministic methods — not investment advice."
+        actions={
+          <RunValuationButton
             companyId={company.id}
-            financials={financials}
-            canWrite={canWrite}
+            hasFinancials={financials.length > 0}
+            hasExistingRun={latestRun !== null}
           />
-        </CardContent>
-      </Card>
+        }
+      />
+
+      {!results && financialHistory}
 
       {results && latestRun && (
         <>
-          <div className="grid gap-6 lg:grid-cols-[1fr_1.6fr]">
-            <Card className="flex flex-col justify-center">
-              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-                <SectionLabel>Estimated equity value</SectionLabel>
-                <p className="text-4xl font-extrabold text-primary">
-                  {formatEurCompact(results.aggregated.low)}
-                  <span className="mx-2 text-2xl text-muted-foreground">–</span>
-                  {formatEurCompact(results.aggregated.high)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Midpoint {formatEurCompact(results.aggregated.mid)} ·{" "}
-                  {results.sectorLabel} · refs {latestRun.refsVersion}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-primary">Range by method</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ValuationRangeChart
-                  rows={[
-                    ...results.methods.map((m) => ({
-                      label: METHOD_LABELS[m.method] ?? m.method,
-                      ...methodRange(m),
-                    })),
-                    {
-                      label: "Aggregated range",
-                      low: results.aggregated.low,
-                      mid: results.aggregated.mid,
-                      high: results.aggregated.high,
-                      emphasis: true,
-                    },
-                  ]}
-                />
-              </CardContent>
-            </Card>
-          </div>
+          <section aria-label="Indicative equity range">
+            <InstrumentPanel className="p-0">
+              <div className="grid lg:grid-cols-[0.65fr_1.55fr]">
+                <div className="flex min-h-72 items-center border-b border-border p-6 lg:border-b-0 lg:border-r">
+                  <div className="w-full">
+                    <p className="instrument-label">Estimated equity value</p>
+                    <p className="mt-4 font-heading text-4xl font-extrabold leading-none text-primary sm:text-5xl">
+                      <span className="font-utility tabular-nums">
+                        {formatEurCompact(results.aggregated.low)}
+                      </span>
+                      <span className="mx-2 text-2xl text-muted-foreground">–</span>
+                      <span className="font-utility tabular-nums">
+                        {formatEurCompact(results.aggregated.high)}
+                      </span>
+                    </p>
+                    <div className="mt-7 [&_dd]:font-utility [&_dd]:tabular-nums">
+                      <MetricScale
+                        low={results.aggregated.low}
+                        mid={results.aggregated.mid}
+                        high={results.aggregated.high}
+                      />
+                    </div>
+                    <p className="mt-5 border-t border-border pt-4 font-utility text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {results.sectorLabel} · refs {latestRun.refsVersion}
+                    </p>
+                  </div>
+                </div>
+                <div className="min-w-0 p-6">
+                  <p className="instrument-label">Method bands</p>
+                  <h2 className="mt-1 font-heading text-xl font-extrabold uppercase tracking-wide text-primary">
+                    Range by method
+                  </h2>
+                  <div className="mt-5 min-w-0">
+                    <ValuationRangeChart
+                      rows={[
+                        ...results.methods.map((m) => ({
+                          label: METHOD_LABELS[m.method] ?? m.method,
+                          ...methodRange(m),
+                        })),
+                        {
+                          label: "Aggregated range",
+                          low: results.aggregated.low,
+                          mid: results.aggregated.mid,
+                          high: results.aggregated.high,
+                          emphasis: true,
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
+            </InstrumentPanel>
+          </section>
+
+          {financialHistory}
 
           <div className="grid gap-6 md:grid-cols-3">
             {results.methods.map((method) => {
               const range = methodRange(method);
               return (
-                <Card key={method.method}>
-                  <CardHeader>
-                    <CardTitle className="text-base text-primary">
-                      {METHOD_LABELS[method.method] ?? method.method}
-                    </CardTitle>
-                    <CardDescription>
-                      {range.low === range.high
-                        ? formatEurCompact(range.mid)
-                        : `${formatEurCompact(range.low)} – ${formatEurCompact(range.high)}`}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-1.5 text-xs text-muted-foreground">
-                      {method.assumptions.map((assumption) => (
-                        <li key={assumption} className="flex gap-1.5">
-                          <span aria-hidden>·</span>
-                          {assumption}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                <InstrumentPanel
+                  key={method.method}
+                  eyebrow="Valuation method"
+                  title={METHOD_LABELS[method.method] ?? method.method}
+                >
+                  <p className="font-utility text-sm font-semibold tabular-nums text-primary">
+                    {range.low === range.high
+                      ? formatEurCompact(range.mid)
+                      : `${formatEurCompact(range.low)} – ${formatEurCompact(range.high)}`}
+                  </p>
+                  <ul className="mt-4 space-y-1.5 border-t border-border pt-4 text-xs text-muted-foreground">
+                    {method.assumptions.map((assumption) => (
+                      <li key={assumption} className="flex gap-1.5">
+                        <span aria-hidden>·</span>
+                        {assumption}
+                      </li>
+                    ))}
+                  </ul>
+                </InstrumentPanel>
               );
             })}
           </div>
 
-          <Card className="bg-muted/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base text-primary">
+          <InstrumentPanel
+            className="bg-muted/50"
+            eyebrow="Method notes"
+            title={
+              <span className="flex items-center gap-2">
                 <Info className="size-4" /> Assumptions & skipped methods
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1.5 text-sm text-muted-foreground">
+              </span>
+            }
+          >
+            <div className="space-y-1.5 text-sm text-muted-foreground">
               {results.assumptions.map((assumption) => (
                 <p key={assumption}>· {assumption}</p>
               ))}
@@ -173,8 +180,8 @@ export default async function ValuationPage({
               <p className="pt-2 text-xs">
                 {getValuationRefs(latestRun.refsVersion).note}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </InstrumentPanel>
         </>
       )}
     </div>

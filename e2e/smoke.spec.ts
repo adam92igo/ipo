@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 /**
  * Full-journey smoke test: sign-up -> org -> company -> complete assessment
@@ -18,6 +18,33 @@ async function answerAllVisibleQuestions(page: Page, total: number): Promise<voi
   ).toBeVisible();
 }
 
+async function readMotionTiming(locator: Locator): Promise<{
+  animationDurationMs: number;
+  animationIterationCounts: string[];
+  transitionDurationMs: number;
+}> {
+  return locator.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const maxDurationInMs = (durationList: string): number =>
+      Math.max(
+        ...durationList.split(",").map((rawDuration) => {
+          const duration = rawDuration.trim();
+          if (duration.endsWith("ms")) return Number.parseFloat(duration);
+          if (duration.endsWith("s")) return Number.parseFloat(duration) * 1_000;
+          return Number.POSITIVE_INFINITY;
+        }),
+      );
+
+    return {
+      animationDurationMs: maxDurationInMs(style.animationDuration),
+      animationIterationCounts: style.animationIterationCount
+        .split(",")
+        .map((value) => value.trim()),
+      transitionDurationMs: maxDurationInMs(style.transitionDuration),
+    };
+  });
+}
+
 test("IPO readiness journey end to end", async ({ page }) => {
   const stamp = Date.now();
   const email = `e2e-${stamp}@example.com`;
@@ -27,7 +54,16 @@ test("IPO readiness journey end to end", async ({ page }) => {
   });
 
   // Sign up
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/sign-up");
+  await expect(page.getByRole("img", { name: "IPO Compass" })).toBeVisible();
+  await expect(
+    page.getByRole("paragraph").filter({
+      hasText: /^Navigate\. Prepare\. Go public\.$/,
+    }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(page.getByRole("img", { name: "IPO Compass" })).toBeVisible();
   await page.getByLabel("Full name").fill("E2E Tester");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill("SmokeTest1234!");
@@ -45,11 +81,32 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await page.getByLabel("Company name *").fill("Smoke Test SAS");
   await page.getByLabel("Sector *").fill("Software");
   await page.getByRole("button", { name: "Add company", exact: true }).click();
-  await expect(page.getByText("Smoke Test SAS")).toBeVisible();
+  await expect(page.getByRole("main").getByText("Smoke Test SAS")).toBeVisible();
+  const companyProfile = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Company details" }),
+  });
+  const websiteField = companyProfile.getByText("Official website", { exact: true }).locator("..");
+  await expect(websiteField).toContainText("Not provided");
+
+  await page.goto("/dashboard");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  for (const label of ["Overview", "Diagnostic", "Valuation", "Roadmap", "Assistant"]) {
+    await expect(page.getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "Companies", exact: true })).toHaveCount(0);
 
   // Complete the full readiness assessment
-  await page.getByRole("link", { name: /Assess/ }).click();
+  await page.getByRole("link", { name: "Diagnostic", exact: true }).click();
   await expect(page).toHaveURL(/\/assessment$/);
+  await expect(
+    page.getByRole("progressbar", { name: "Assessment completion" }),
+  ).toHaveAttribute("aria-valuenow", "0");
+  await expect(
+    page.getByRole("navigation", { name: "Assessment sections" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Governance section" }),
+  ).toHaveAttribute("aria-current", "step");
 
   const categoryTotals: Array<[string, number]> = [
     ["Governance", 22],
@@ -59,8 +116,11 @@ test("IPO readiness journey end to end", async ({ page }) => {
     ["Reporting", 20],
   ];
   const grandTotal = categoryTotals.reduce((sum, [, total]) => sum + total, 0);
-  for (const [, total] of categoryTotals) {
+  for (const [categoryLabel, total] of categoryTotals) {
     await answerAllVisibleQuestions(page, total);
+    await expect(
+      page.getByRole("button", { name: `${categoryLabel} section`, exact: true }),
+    ).toHaveAccessibleDescription("Complete");
     const nextButton = page.getByRole("button", { name: "Next", exact: true });
     if (await nextButton.isVisible()) {
       await nextButton.click();
@@ -75,9 +135,12 @@ test("IPO readiness journey end to end", async ({ page }) => {
   // Results page: frozen score + radar + category gauges rendered
   await expect(page).toHaveURL(/\/results$/);
   await expect(page.getByText("IPO readiness score")).toBeVisible();
-  await expect(page.getByText("Global score")).toBeVisible();
+  await expect(page.getByLabel(/IPO readiness: \d+%/)).toBeVisible();
+  await expect(page.getByText("Readiness signals")).toBeVisible();
   await expect(page.getByRole("img", { name: /Readiness radar/ })).toBeVisible();
-  await expect(page.getByText("Category scores")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Category scores" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Strengths" })).toHaveCount(1);
+  await expect(page.getByRole("list", { name: "Weaknesses" })).toHaveCount(1);
 
   // Valuation: add a fiscal year, then run the valuation
   await page.getByRole("link", { name: "Build the roadmap" }).click();
@@ -91,18 +154,154 @@ test("IPO readiness journey end to end", async ({ page }) => {
   await expect(page.getByText("2025").first()).toBeVisible();
   await page.getByRole("button", { name: "Run valuation" }).click();
   await expect(page.getByText("Estimated equity value")).toBeVisible();
-  await expect(page.getByText(/Midpoint €/)).toBeVisible();
+  const range = page.getByRole("region", { name: "Indicative equity range" });
+  await expect(range).toBeVisible();
+  await expect(range.getByText("Low", { exact: true })).toBeVisible();
+  await expect(range.getByText("Midpoint", { exact: true })).toBeVisible();
+  await expect(range.getByText("High", { exact: true })).toBeVisible();
 
   // Roadmap: generate from the completed assessment
   await page.goto(`/companies/${companyId}/roadmap`);
   await page.getByRole("button", { name: "Generate roadmap" }).click();
   await expect(page.getByText(/of \d+ steps done/)).toBeVisible();
+  await expect(
+    page.getByRole("list", { name: "IPO preparation roadmap" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Rules v\d/)).toBeVisible();
+
+  // Overview cockpit: persisted readiness, valuation and route are visible
+  await page.goto("/dashboard");
+  await expect(page.getByText("Readiness index")).toBeVisible();
+  await expect(page.getByText("Route to market")).toBeVisible();
+  await expect(page.getByText("Indicative equity value")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Route to market" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Smoke Test SAS", level: 1 }),
+  ).toBeVisible();
 
   // Assistant: degraded mode without an AI key — banner shown, no chat, no API call
   await page.goto("/assistant");
+  await expect(page.getByRole("heading", { name: "IPO Assistant" })).toBeVisible();
+  await expect(
+    page.getByText("Deterministic scores and valuations remain unchanged."),
+  ).toBeVisible();
   await expect(page.getByText("AI is not configured yet")).toBeVisible();
   await expect(
     page.getByPlaceholder("Ask about prospectus requirements, markets, governance…"),
   ).toHaveCount(0);
   expect(apiRequests).toHaveLength(0);
+
+  // Mobile shell: compact navigation remains accessible without page overflow
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dashboard");
+  const menuButton = page.getByRole("button", { name: "Open navigation" });
+  await expect(menuButton).toBeVisible();
+  await menuButton.click();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Overview", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Diagnostic", exact: true }),
+  ).toBeVisible();
+  const documentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(documentWidth).toBeLessThanOrEqual(390);
+});
+
+test("mobile cockpit supports keyboard navigation and reduced motion", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sign-up");
+  await page.getByLabel("Full name").fill("Accessibility Tester");
+  await page.getByLabel("Work email").fill(`a11y-${stamp}@example.com`);
+  await page.getByLabel("Password").fill("SmokeTest1234!");
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await page.getByLabel("Organization name").fill(`A11y Org ${stamp}`);
+  await page.getByRole("button", { name: "Create organization" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await expect(
+    page.getByRole("button", { name: "Open navigation" }),
+  ).toBeVisible();
+  // Radix marks the page shell inert while the modal sheet is open, so keep a
+  // DOM locator for state and focus checks after the trigger leaves the a11y tree.
+  const menuButton = page.locator('button[aria-label="Open navigation"]');
+  await menuButton.focus();
+  await expect(menuButton).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  const mobileDialog = page.getByRole("dialog");
+  const mobileOverviewLink = mobileDialog.getByRole("link", {
+    name: "Overview",
+    exact: true,
+  });
+  const mobileDiagnosticLink = mobileDialog.getByRole("link", {
+    name: "Diagnostic",
+    exact: true,
+  });
+  await expect(mobileDialog).toBeVisible();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+  expect(
+    await mobileDialog.evaluate((dialog) => dialog.contains(document.activeElement)),
+  ).toBe(true);
+
+  await page.keyboard.press("Tab");
+  await expect(mobileOverviewLink).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(mobileDiagnosticLink).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(mobileOverviewLink).toBeFocused();
+
+  const defaultMotionTiming = await readMotionTiming(mobileDialog);
+  expect(defaultMotionTiming.animationDurationMs).toBeGreaterThan(0.01);
+  expect(defaultMotionTiming.transitionDurationMs).toBeGreaterThan(0.01);
+
+  await page.keyboard.press("Escape");
+  await expect(mobileDialog).toBeHidden();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(menuButton).toBeFocused();
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      ),
+    )
+    .toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(mobileDialog).toBeVisible();
+
+  const reducedMotionTiming = await readMotionTiming(mobileDialog);
+  expect(reducedMotionTiming.animationDurationMs).toBeLessThanOrEqual(0.01);
+  expect(reducedMotionTiming.transitionDurationMs).toBeLessThanOrEqual(0.01);
+  expect(
+    reducedMotionTiming.animationIterationCounts.every((count) => count === "1"),
+  ).toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(menuButton).toBeFocused();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(390);
+
+  // Playwright has no desktop browser-zoom API. A 640 CSS-pixel viewport is
+  // the objective reflow geometry of a 1280-pixel viewport at 200% zoom, but
+  // this check deliberately does not claim to emulate browser zoom itself.
+  await page.setViewportSize({ width: 640, height: 800 });
+  await expect(menuButton).toBeVisible();
+  const reflowDocumentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(reflowDocumentWidth).toBeLessThanOrEqual(640);
 });
