@@ -51,6 +51,9 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-direction: var(--direction);
+  --color-positive: var(--positive);
+  --color-attention: var(--attention);
 }
 
 :root {
@@ -73,6 +76,9 @@
   --success-foreground: #ffffff;
   --warning: #d1a13a;
   --warning-foreground: #062b4b;
+  --direction: #d1a13a;
+  --positive: #287b68;
+  --attention: #c65335;
   --border: #c9d6dc;
   --input: #c9d6dc;
   --ring: #062b4b;
@@ -154,6 +160,9 @@
   --success-foreground: #052e16;
   --warning: #f59e0b;
   --warning-foreground: #451a03;
+  --direction: #f59e0b;
+  --positive: #22c55e;
+  --attention: oklch(0.704 0.191 22.216);
   --border: rgb(255 255 255 / 0.1);
   --input: rgb(255 255 255 / 0.14);
   --ring: #818cf8;

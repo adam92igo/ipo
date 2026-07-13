@@ -11,13 +11,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute -right-32 top-72 h-20 w-[40rem] -rotate-[18deg] border-y border-white/15" />
           <div className="absolute -bottom-16 -right-10 h-72 w-[34rem] bg-white/[0.035] [clip-path:polygon(20%_0,100%_0,100%_100%,0_100%)]" />
         </div>
-        <div className="relative flex items-center gap-4">
+        <div className="relative -mx-12 -mt-12 flex items-center gap-4 border-b border-border bg-card px-12 py-6 text-primary">
           <BrandMark priority className="w-16" />
           <div aria-hidden="true">
             <span className="block font-heading text-2xl font-extrabold uppercase leading-none tracking-wide">
               IPO Compass
             </span>
-            <span className="mt-1 block font-utility text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-primary-foreground/60">
+            <span className="mt-1 block font-utility text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               IPO readiness command
             </span>
           </div>

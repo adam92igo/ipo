@@ -40,11 +40,11 @@ export function UserMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-11 gap-2 px-2 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
+          className="h-11 gap-2 px-2 text-primary hover:bg-muted hover:text-primary focus-visible:border-primary"
           aria-label={`Open user menu for ${userName}`}
         >
-          <Avatar className="size-8 rounded-full border border-white/15 bg-white/10">
-            <AvatarFallback className="bg-transparent text-xs text-white">
+          <Avatar className="size-8 rounded-full border border-border bg-muted">
+            <AvatarFallback className="bg-transparent text-xs text-primary">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -53,11 +53,11 @@ export function UserMenu({
           </span>
           <span className="hidden max-w-40 text-left text-sm leading-tight 2xl:grid">
             <span className="truncate font-semibold">{userName}</span>
-            <span className="truncate text-xs text-primary-foreground/60">
+            <span className="truncate text-xs text-muted-foreground">
               {userEmail}
             </span>
           </span>
-          <ChevronsUpDown className="size-4 text-primary-foreground/60" />
+          <ChevronsUpDown className="size-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end" className="w-56">
