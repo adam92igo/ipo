@@ -6,6 +6,7 @@ import {
 } from "./assessment-prefill";
 import { buildAssistantSystemPrompt } from "./assistant";
 import { getAiProvider, getAiSetupMessage, isAiConfigured } from "./config";
+import { aiProviderErrorMessage } from "./errors";
 import { parseGeminiProfileSuggestionText } from "./model";
 import { mapPappersResult } from "./pappers";
 import { buildProfileFillPrompt } from "./profile-fill";
@@ -360,5 +361,34 @@ describe("assessment AI prefill", () => {
         sources: ["website"],
       },
     ]);
+  });
+});
+
+describe("aiProviderErrorMessage", () => {
+  it("surfaces Gemini quota failures with a useful setup message", () => {
+    const message = aiProviderErrorMessage({
+      name: "ApiError",
+      status: 429,
+      message: JSON.stringify({
+        error: {
+          status: "RESOURCE_EXHAUSTED",
+          message:
+            "You exceeded your current quota. Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash",
+        },
+      }),
+    });
+
+    expect(message).toContain("Gemini quota");
+    expect(message).toContain("billing");
+    expect(message).toContain("GEMINI_MODEL");
+  });
+
+  it("surfaces invalid API credentials clearly", () => {
+    expect(
+      aiProviderErrorMessage({
+        status: 401,
+        message: "API key not valid",
+      }),
+    ).toContain("API key");
   });
 });

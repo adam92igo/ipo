@@ -6,6 +6,7 @@ import {
   fillCompanyProfile,
   type ProfileFillResult,
 } from "@/lib/ai/profile-fill";
+import { aiProviderErrorMessage } from "@/lib/ai/errors";
 import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { UnsafeUrlError } from "@/lib/ai/website";
 import { requireOrgContext } from "@/lib/data-access/context";
@@ -42,6 +43,8 @@ export async function fillCompanyProfileAction(input: {
   } catch (error) {
     if (error instanceof AiNotConfiguredError) return { ok: false, error: error.message };
     if (error instanceof UnsafeUrlError) return { ok: false, error: error.message };
+    const providerError = aiProviderErrorMessage(error);
+    if (providerError) return { ok: false, error: providerError };
     return { ok: false, error: actionErrorMessage(error) };
   }
 }

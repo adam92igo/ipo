@@ -7,6 +7,7 @@ import {
   prefillAssessmentAnswers,
   type AssessmentPrefillSuggestion,
 } from "@/lib/ai/assessment-prefill";
+import { aiProviderErrorMessage } from "@/lib/ai/errors";
 import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { actionErrorMessage } from "@/lib/data-access/action-errors";
 import {
@@ -117,6 +118,8 @@ export async function prefillAssessmentAction(
     return { ok: true, ...result };
   } catch (error) {
     if (error instanceof AiNotConfiguredError) return { ok: false, error: error.message };
+    const providerError = aiProviderErrorMessage(error);
+    if (providerError) return { ok: false, error: providerError };
     return { ok: false, error: actionErrorMessage(error) };
   }
 }
