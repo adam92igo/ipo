@@ -6,8 +6,25 @@ import { MetricScale } from "./metric-scale";
 import { PrioritySignalList } from "./priority-signal-list";
 import { ReadinessBearing } from "./readiness-bearing";
 import { SnapshotState } from "./snapshot-state";
+import { ValuationEvidenceCoverage } from "./valuation-evidence";
 
 describe("cockpit components", () => {
+  it("reports both included and skipped valuation methods", () => {
+    const html = renderToStaticMarkup(
+      createElement(ValuationEvidenceCoverage, {
+        methodCount: 2,
+        skippedMethodCount: 1,
+        financialYearCount: 3,
+        refsVersion: "valuation-refs.v1",
+      }),
+    );
+
+    expect(html).toContain("Methods in range");
+    expect(html).toContain(">2<");
+    expect(html).toContain("Methods skipped");
+    expect(html).toContain(">1<");
+  });
+
   it("renders the readiness score as text, not only graphics", () => {
     const html = renderToStaticMarkup(
       createElement(ReadinessBearing, { score: 72, label: "Advancing" }),

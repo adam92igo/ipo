@@ -1,9 +1,10 @@
-import { Building2, ClipboardCheck, Gauge } from "lucide-react";
+import { Building2, ClipboardCheck, Gauge, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { InstrumentPanel } from "@/components/layout/instrument-panel";
 import { PageHeading } from "@/components/layout/page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { readStoredReadinessScores } from "@/lib/assessment-snapshot";
 import {
   listLatestAssessmentsByCompany,
   listLatestCompletedAssessmentsByCompany,
@@ -12,6 +13,7 @@ import {
 import { listCompanies } from "@/lib/data-access/companies";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
 import { isAiConfigured } from "@/lib/ai/config";
+import { getQuestionnaire } from "@/lib/questionnaire";
 import { CreateCompanyDialog } from "./create-company-dialog";
 
 export const metadata = { title: "Company" };
@@ -79,6 +81,14 @@ function CompanyProfile({
   latest: Assessment | undefined;
   completed: Assessment | undefined;
 }) {
+  const storedReadiness =
+    completed && completed.completedAt
+      ? readStoredReadinessScores(
+          getQuestionnaire(completed.questionnaireVersion),
+          completed,
+        )
+      : null;
+
   return (
     <InstrumentPanel
       eyebrow="Issuer record"
@@ -119,11 +129,18 @@ function CompanyProfile({
         )}
       </div>
       <div className="flex flex-col gap-4 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        {completed ? (
+        {completed && storedReadiness ? (
           <div className="flex items-center gap-2">
             <Gauge className="size-4 text-primary" />
             <span className="font-utility text-sm font-semibold text-primary">
-              {Math.round(Number(completed.globalScore))}% ready
+              {Math.round(storedReadiness.globalScore)}% ready
+            </span>
+          </div>
+        ) : completed ? (
+          <div className="flex items-center gap-2 text-destructive">
+            <TriangleAlert className="size-4" />
+            <span className="font-utility text-sm font-semibold">
+              Stored snapshot incomplete
             </span>
           </div>
         ) : latest ? (

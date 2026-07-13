@@ -5,6 +5,7 @@ import { MetricScale } from "@/components/cockpit/metric-scale";
 import { PrioritySignalList } from "@/components/cockpit/priority-signal-list";
 import { ReadinessBearing } from "@/components/cockpit/readiness-bearing";
 import { SnapshotState } from "@/components/cockpit/snapshot-state";
+import { ValuationEvidenceCoverage } from "@/components/cockpit/valuation-evidence";
 import { InstrumentPanel } from "@/components/layout/instrument-panel";
 import { PageHeading } from "@/components/layout/page-heading";
 import { Button } from "@/components/ui/button";
@@ -298,20 +299,12 @@ export default async function DashboardPage() {
           action={moduleAction(valuationHref, "Open valuation")}
         >
           {valuation.kind === "available" ? (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
-              <div>
-                <dt className="instrument-label">Methods in range</dt>
-                <dd className="mt-1 font-heading text-3xl font-extrabold text-primary">{valuation.methodCount}</dd>
-              </div>
-              <div>
-                <dt className="instrument-label">Financial history</dt>
-                <dd className="mt-1 font-heading text-3xl font-extrabold text-primary">{snapshot.financialYearCount} {snapshot.financialYearCount === 1 ? "year" : "years"}</dd>
-              </div>
-              <div className="col-span-2 border-t pt-3">
-                <dt className="instrument-label">Reference set</dt>
-                <dd className="mt-1 font-utility text-xs font-semibold text-primary">{valuation.refsVersion}</dd>
-              </div>
-            </dl>
+            <ValuationEvidenceCoverage
+              methodCount={valuation.methodCount}
+              skippedMethodCount={valuation.skippedMethodCount}
+              financialYearCount={snapshot.financialYearCount}
+              refsVersion={valuation.refsVersion}
+            />
           ) : (
             <SnapshotState
               title={valuation.kind === "missing_financials" ? "Build the evidence base" : "Calculate the stored range"}

@@ -16,6 +16,7 @@ import {
   getAnswersFor,
   getLatestCompletedAssessment,
 } from "@/lib/data-access/assessments";
+import { readStoredReadinessScores } from "@/lib/assessment-snapshot";
 import { getCompany } from "@/lib/data-access/companies";
 import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
 import { getQuestionnaire } from "@/lib/questionnaire";
@@ -41,15 +42,46 @@ export default async function ResultsPage({
   }
 
   const questionnaire = getQuestionnaire(assessment.questionnaireVersion);
+  const completedAt = assessment.completedAt;
+  const storedReadiness = completedAt
+    ? readStoredReadinessScores(questionnaire, assessment)
+    : null;
+
+  if (!completedAt || !storedReadiness) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-6">
+        <PageHeading
+          eyebrow="IPO readiness score"
+          title={company.name}
+          description="The latest completed assessment cannot be displayed as reliable readiness evidence."
+          actions={
+            <Button asChild>
+              <Link href={`/companies/${company.id}/assessment`}>
+                <RotateCcw data-slot="icon" /> Reassess
+              </Link>
+            </Button>
+          }
+        />
+        <InstrumentPanel
+          eyebrow="Assessment evidence"
+          title="Stored snapshot incomplete"
+        >
+          <div className="flex items-start gap-3 border-y border-border py-5">
+            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-destructive" />
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              One or more frozen scores are missing or invalid. Complete a new
+              assessment to restore the readiness radar, classifications, and
+              summary without inventing replacement values.
+            </p>
+          </div>
+        </InstrumentPanel>
+      </div>
+    );
+  }
 
   // Single source of truth: classification runs on the scores FROZEN at
   // completion, never on a recomputation against today's config.
-  const categoryScores = assessment.categoryScores ?? {};
-  const frozenCategories = questionnaire.categories.map((c) => ({
-    id: c.id,
-    label: c.label,
-    score: categoryScores[c.id] ?? 0,
-  }));
+  const frozenCategories = storedReadiness.categories;
   const { strengths, weaknesses } = classifyCategories(
     frozenCategories,
     questionnaire.thresholds,
@@ -66,7 +98,7 @@ export default async function ResultsPage({
   }
 
   const radarData = frozenCategories.map((c) => ({ label: c.label, score: c.score }));
-  const global = Number(assessment.globalScore);
+  const global = storedReadiness.globalScore;
   const statusOf = (id: string): "strength" | "weakness" | null =>
     strengths.some((s) => s.id === id)
       ? "strength"
@@ -91,7 +123,7 @@ export default async function ResultsPage({
         metadata={
           <span className="border border-border bg-card px-3 py-2 font-utility text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
             Assessed{" "}
-            {assessment.completedAt!.toLocaleDateString("en-GB", {
+            {completedAt.toLocaleDateString("en-GB", {
               day: "numeric",
               month: "long",
               year: "numeric",

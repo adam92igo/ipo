@@ -65,6 +65,7 @@ describe("valuationState", () => {
       mid: 1_500_000,
       high: 2_000_000,
       methodCount: 3,
+      skippedMethodCount: 0,
       refsVersion: "valuation-refs.v1",
       createdAt: new Date("2026-07-11T12:00:00.000Z"),
     };

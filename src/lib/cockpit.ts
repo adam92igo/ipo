@@ -56,6 +56,7 @@ export type ValuationSnapshotState =
       mid: number;
       high: number;
       methodCount: number;
+      skippedMethodCount: number;
       refsVersion: string;
       createdAt: Date;
     };

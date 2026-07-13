@@ -102,8 +102,36 @@ describe("cockpit data-access", () => {
       expect(populated.company.id).toBe(ownerCompany.id);
       expect(populated.assessment.kind).toBe("available");
       expect(populated.valuation.kind).toBe("available");
+      if (populated.valuation.kind === "available") {
+        expect(populated.valuation.skippedMethodCount).toBe(0);
+      }
       expect(populated.priorities.every((item) => String(item.status) !== "done")).toBe(true);
       expect(populated.priorities).toHaveLength(3);
+    }
+  });
+
+  it("reports the methods skipped by the stored valuation aggregation", async () => {
+    const ctx = await seedOrgWithUser("owner");
+    const company = await createCompany(ctx, {
+      name: "Coverage SAS",
+      sector: "Software",
+      country: "FR",
+    });
+    await upsertFinancialYear(ctx, company.id, {
+      fiscalYear: 2025,
+      revenue: 5_000_000,
+      ebitda: null,
+      netIncome: null,
+      netDebt: 200_000,
+      freeCashFlow: null,
+    });
+    await runValuation(ctx, company.id);
+
+    const snapshot = await getCockpitSnapshot(ctx);
+    expect(snapshot.kind).toBe("company");
+    if (snapshot.kind === "company" && snapshot.valuation.kind === "available") {
+      expect(snapshot.valuation.methodCount).toBe(1);
+      expect(snapshot.valuation.skippedMethodCount).toBe(2);
     }
   });
 

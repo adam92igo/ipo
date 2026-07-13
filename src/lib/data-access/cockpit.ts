@@ -10,6 +10,7 @@ import {
   type AssessmentSnapshotState,
   type ValuationSnapshotState,
 } from "../cockpit";
+import { readStoredReadinessScores } from "../assessment-snapshot";
 import { getQuestionnaire } from "../questionnaire";
 import {
   getAnswersFor,
@@ -49,34 +50,6 @@ export type CockpitSnapshot =
       latestFinancialYear: number | null;
       trajectory: ReturnType<typeof deriveMarketTrajectory>;
     };
-
-function frozenCategoryScores(
-  questionnaire: ReturnType<typeof getQuestionnaire>,
-  categoryScores: Record<string, number>,
-): CategoryScore[] {
-  return questionnaire.categories.map((category) => ({
-    id: category.id,
-    label: category.label,
-    score: categoryScores[category.id],
-  }));
-}
-
-function isBoundedScore(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
-}
-
-function hasCompleteCategoryScores(
-  questionnaire: ReturnType<typeof getQuestionnaire>,
-  categoryScores: Record<string, number> | null,
-): categoryScores is Record<string, number> {
-  if (categoryScores === null) return false;
-  const hasEveryCategory = questionnaire.categories.every(
-    (category) =>
-      Object.prototype.hasOwnProperty.call(categoryScores, category.id) &&
-      isBoundedScore(categoryScores[category.id]),
-  );
-  return hasEveryCategory && Object.values(categoryScores).every(isBoundedScore);
-}
 
 function roadmapPriority(item: RoadmapItem): CockpitPriority | null {
   if (item.status === "done") return null;
@@ -120,23 +93,18 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
   const completedQuestionnaire = completedAssessment
     ? getQuestionnaire(completedAssessment.questionnaireVersion)
     : null;
-  const frozenGlobalScore =
-    completedAssessment?.globalScore === null || completedAssessment?.globalScore === undefined
-      ? null
-      : Number(completedAssessment.globalScore);
+  const storedReadiness =
+    completedAssessment && completedQuestionnaire
+      ? readStoredReadinessScores(completedQuestionnaire, completedAssessment)
+      : null;
 
   if (
     completedAssessment &&
-    completedQuestionnaire &&
-    isBoundedScore(frozenGlobalScore) &&
-    hasCompleteCategoryScores(completedQuestionnaire, completedAssessment.categoryScores) &&
+    storedReadiness &&
     completedAssessment.completedAt !== null
   ) {
-    frozenScores = frozenCategoryScores(
-      completedQuestionnaire,
-      completedAssessment.categoryScores,
-    );
-    globalScore = frozenGlobalScore;
+    frozenScores = storedReadiness.categories;
+    globalScore = storedReadiness.globalScore;
     limitingCategory = frozenScores.reduce<CategoryScore | null>(
       (lowest, category) => (!lowest || category.score < lowest.score ? category : lowest),
       null,
@@ -146,7 +114,7 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
       score: globalScore,
       completedAt: completedAssessment.completedAt,
       questionnaireVersion: completedAssessment.questionnaireVersion,
-      categoryScores: completedAssessment.categoryScores,
+      categoryScores: storedReadiness.categoryScores,
     };
   } else if (completedAssessment) {
     assessmentState = { kind: "unavailable", reason: "incomplete_snapshot" };
@@ -164,7 +132,10 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
 
   let priorities: CockpitPriority[];
   let attentionCount: number;
-  if (roadmapItems.length > 0) {
+  if (assessmentState.kind !== "available") {
+    priorities = [];
+    attentionCount = 0;
+  } else if (roadmapItems.length > 0) {
     const unresolved = roadmapItems
       .map(roadmapPriority)
       .filter((item): item is CockpitPriority => item !== null);
@@ -202,6 +173,7 @@ export async function getCockpitSnapshot(ctx: OrgContext): Promise<CockpitSnapsh
             mid: results.aggregated.mid,
             high: results.aggregated.high,
             methodCount: results.methods.length,
+            skippedMethodCount: results.aggregated.methodsSkipped.length,
             refsVersion: valuationRun.refsVersion,
             createdAt: valuationRun.createdAt,
           };
