@@ -9,7 +9,7 @@ New to the repo? See [README.md](README.md) for local setup (Docker, `.env`, mig
 - Next.js 15 (App Router) + TypeScript + Tailwind v4 + shadcn/ui (`src/components/ui`)
 - PostgreSQL 17 (local via `docker compose up -d`) + Drizzle ORM (node-postgres)
 - better-auth with the `organization` plugin — multi-tenant: one organization owns exactly one company (`company_org_uq`), roles `owner` / `admin` / `member`
-- Anthropic API (claude-sonnet) for AI modules ONLY (module 5) — never inside scoring, valuation, or roadmap engines
+- Anthropic API or Gemini for AI modules ONLY (module 5) — never inside scoring, valuation, or roadmap engines
 - Vitest for tests
 
 ## Commands
@@ -44,11 +44,12 @@ New to the repo? See [README.md](README.md) for local setup (Docker, `.env`, mig
 2. ✅ Diagnostic engine (questionnaire, weighted scoring, radar restitution) — TDD
 3. ✅ Valuation (DCF, sector comparables, market multiples; aggregated min–max range) — TDD
 4. ✅ Roadmap (rules engine from assessment results)
-5. ✅ AI modules ("Fill with AI" from official website + Pappers only — no LinkedIn scraping; contextual IPO assistant). AI code lives in `src/lib/ai/`; degrades gracefully when `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are unset.
+5. ✅ AI modules ("Fill with AI" company profile suggestions, public-evidence assessment pre-fill suggestions, and contextual IPO assistant). AI code lives in `src/lib/ai/`; public sources are official website + Pappers only — no LinkedIn scraping. Degrades gracefully when no AI provider key is configured.
 
 Post-MVP additions:
 
-- Per-organization rate limiting on both AI endpoints (sliding window, `src/lib/data-access/rate-limit.ts`).
+- Per-organization rate limiting on AI endpoints (sliding window, `src/lib/data-access/rate-limit.ts`): company profile fill, assessment pre-fill, and assistant messages.
+- AI provider selection is controlled by `AI_PROVIDER=auto|anthropic|gemini`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, and model overrides (`AI_MODEL`, `GEMINI_MODEL`). Gemini quota failures are surfaced as user-facing provider errors; never commit real keys.
 - CI (typecheck, lint, test, test:e2e, Semgrep, OSV-Scanner) + a branch ruleset on `main` — see "Workflow" below.
 - A disposable demo environment (`pnpm demo` / `pnpm demo:seed`) for investor/sales walkthroughs — see README.
 - Tenancy narrowed from "one organization owns N companies" to exactly one: the target user is a single company's CEO/CFO, not a multi-client advisory firm — `createCompany` enforces it (`company_org_uq` + `CompanyAlreadyExistsError`).

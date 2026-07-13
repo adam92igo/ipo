@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { buildAssistantSystemPrompt } from "@/lib/ai/assistant";
-import { AI_MODEL, getAnthropicClient, isAiConfigured } from "@/lib/ai/config";
+import { getAiSetupMessage, isAiConfigured } from "@/lib/ai/config";
+import { streamAssistantText } from "@/lib/ai/model";
 import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { getAssistantCompanyContext } from "@/lib/data-access/assistant-context";
 import { requireOrgContext } from "@/lib/data-access/context";
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
 
   if (!isAiConfigured()) {
     return Response.json(
-      { error: "AI assistant is not configured — set ANTHROPIC_API_KEY." },
+      { error: getAiSetupMessage() },
       { status: 503 },
     );
   }
@@ -82,24 +83,10 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const client = getAnthropicClient();
-  const stream = client.messages.stream({
-    model: AI_MODEL,
-    max_tokens: 2048,
+  const body = streamAssistantText({
     system,
     messages: parsed.data.messages,
-  });
-
-  const encoder = new TextEncoder();
-  const body = new ReadableStream<Uint8Array>({
-    start(controller) {
-      stream.on("text", (delta) => controller.enqueue(encoder.encode(delta)));
-      stream.on("error", (error) => controller.error(error));
-      stream.on("end", () => controller.close());
-    },
-    cancel() {
-      stream.abort();
-    },
+    maxTokens: 2048,
   });
 
   return new Response(body, {

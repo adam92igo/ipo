@@ -51,6 +51,7 @@ export const roadmapPriorityEnum = pgEnum("roadmap_priority", [
 
 export const aiUsageFeatureEnum = pgEnum("ai_usage_feature", [
   "fill_profile",
+  "prefill_assessment",
   "assistant_message",
 ]);
 

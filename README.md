@@ -28,18 +28,21 @@ copy is in English; amounts are in EUR.
    assumptions.
 4. **Roadmap** — a rules engine that turns assessment weaknesses into a
    prioritised, ordered action plan (no AI).
-5. **AI modules** — "Fill with AI" company-profile pre-fill (official website +
-   Pappers registry only — no LinkedIn scraping) and a contextual IPO
-   assistant that can read a company's frozen score, weaknesses, roadmap and
-   valuation range. Degrades gracefully (banner, no network calls) when
-   `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are unset.
+5. **AI modules** — "Fill with AI" company-profile pre-fill, public-evidence
+   assessment pre-fill suggestions, and a contextual IPO assistant that can
+   read a company's frozen score, weaknesses, roadmap and valuation range.
+   The AI provider can be Anthropic or Gemini; public-data collection stays
+   limited to the official website + Pappers registry only — no LinkedIn
+   scraping. Degrades gracefully (banner, no network calls) when no AI provider
+   key is configured.
 
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind v4 + shadcn/ui
 - PostgreSQL 17 (Docker) + Drizzle ORM (node-postgres)
 - better-auth with the `organization` plugin
-- Anthropic API (`claude-sonnet-5`) for the AI modules only
+- Anthropic API (`claude-sonnet-5`) or Gemini (`gemini-2.0-flash`) for the AI
+  modules only
 - Vitest (unit + integration) and Playwright (end-to-end)
 
 ## Architecture
@@ -52,10 +55,11 @@ copy is in English; amounts are in EUR.
   pure functions: no I/O, no framework imports, no `Date.now()`, no AI. They
   are developed test-first and are the only place readiness scores, valuation
   figures and roadmap rankings are computed.
-- **AI, kept separate.** `src/lib/ai/` holds all Anthropic/Pappers integration
-  code. AI never touches scoring, valuation or roadmap generation — it only
-  suggests profile fields (never auto-saved) and answers questions using a
-  read-only snapshot of already-computed data.
+- **AI, kept separate.** `src/lib/ai/` holds the provider adapters
+  (Anthropic/Gemini), Pappers integration and website extraction. AI never
+  touches scoring, valuation or roadmap generation — it only suggests profile
+  fields, suggests publicly supportable assessment answers for user review,
+  and answers questions using a read-only snapshot of already-computed data.
 - **Versioned content.** Business content — the questionnaire, valuation
   reference ranges, roadmap rules — lives in `config/*.vN.json`, never
   hardcoded and never in the database. Every assessment, valuation run and
@@ -98,22 +102,28 @@ below.)
 To enable the AI modules, add to `.env` and restart the dev server:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-...
+AI_PROVIDER=auto              # auto | anthropic | gemini
+ANTHROPIC_API_KEY=sk-ant-...  # optional when using Gemini
+GEMINI_API_KEY=...            # optional when using Anthropic
+GEMINI_MODEL=gemini-2.0-flash # override if this model has no quota
 PAPPERS_API_KEY=...          # optional — registry pre-fill only
 ```
 
 Without these keys the app runs normally; the AI Assistant page shows a setup
-notice and the "Fill with AI" button is hidden.
+notice and AI actions are unavailable. With Gemini, a 429/RESOURCE_EXHAUSTED
+error usually means the Google project has no quota for the configured
+`GEMINI_MODEL`; enable billing/quota or switch the model in `.env`.
 
 ### AI rate limits
 
-Both AI endpoints are rate-limited per organization (a sliding window over an
+AI endpoints are rate-limited per organization (a sliding window over an
 event log in Postgres — see `src/lib/data-access/rate-limit.ts`), not per IP,
 so one member's usage counts against their whole organization and never
 affects other tenants. Defaults, overridable in `.env`:
 
 ```bash
 RATE_LIMIT_FILL_PROFILE_PER_HOUR=10        # "Fill with AI" calls per organization per hour
+RATE_LIMIT_PREFILL_ASSESSMENT_PER_HOUR=10  # assessment AI pre-fill calls per organization per hour
 RATE_LIMIT_ASSISTANT_MESSAGES_PER_DAY=100  # assistant user-turns per organization per day
 ```
 
@@ -123,6 +133,16 @@ so a single oversized call can't buy unlimited chat past the limit. Exceeding
 either limit returns an explicit error (HTTP 429 with a `Retry-After` header
 for the assistant API; a `{ ok: false, error }` result for the "Fill with AI"
 server action) surfaced in the UI the same way as any other AI error.
+
+### Assessment AI pre-fill
+
+The diagnostic page includes `Prefill with AI`. It does **not** auto-score the
+company: it asks the configured model to propose answers only when public
+evidence supports them, then validates each suggested answer against the
+versioned questionnaire and leaves existing answers untouched. The user must
+review and apply suggestions before they are saved; unanswered/internal
+questions stay manual. The readiness score is still computed only by the
+deterministic scoring engine after completion.
 
 ### Contributing
 
@@ -176,7 +196,8 @@ numbers you see are exactly what those engines compute for the seeded
 answers/financials. The demo server also raises the AI rate limits (see
 above) so a live walkthrough can't accidentally trip them, and shares
 whatever `ANTHROPIC_API_KEY` / `PAPPERS_API_KEY` are in `.env` — set them if
-you want to demo the AI modules live, or leave them unset to show the
+you want to demo the AI modules live. Gemini also works with `GEMINI_API_KEY`
+and `AI_PROVIDER=gemini`; leave all provider keys unset to show the
 degraded-mode banner instead.
 
 During a pitch, log out and back in between companies to move from stage to
@@ -235,7 +256,7 @@ src/
   db/                         Drizzle schema (auth.ts is generated — do not hand-edit)
   engines/                    Pure deterministic engines: scoring, valuation, roadmap
   lib/
-    ai/                       Anthropic + Pappers integration (AI modules only)
+    ai/                       AI provider adapters + Pappers/website extraction (AI modules only)
     data-access/              The only layer allowed to query business tables
     questionnaire.ts, valuation-refs.ts, roadmap-rules.ts   Versioned config loaders
 ```
