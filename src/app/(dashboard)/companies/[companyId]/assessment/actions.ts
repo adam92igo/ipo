@@ -2,13 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { AiNotConfiguredError } from "@/lib/ai/config";
+import {
+  prefillAssessmentAnswers,
+  type AssessmentPrefillSuggestion,
+} from "@/lib/ai/assessment-prefill";
+import { AI_RATE_LIMITS } from "@/lib/ai/rate-limit-config";
 import { actionErrorMessage } from "@/lib/data-access/action-errors";
 import {
   completeAssessment,
+  getAnswersFor,
   getOrCreateActiveAssessment,
   saveAnswer,
 } from "@/lib/data-access/assessments";
+import { getCompany } from "@/lib/data-access/companies";
 import { requireOrgContext } from "@/lib/data-access/context";
+import { checkAndRecordAiUsage } from "@/lib/data-access/rate-limit";
+import { getQuestionnaire } from "@/lib/questionnaire";
 
 const startInput = z.object({
   companyId: z.string().min(1).max(64),
@@ -61,6 +71,52 @@ export async function saveAnswerAction(
     );
     return { ok: true };
   } catch (error) {
+    return { ok: false, error: actionErrorMessage(error) };
+  }
+}
+
+const prefillInput = z.object({
+  companyId: z.string().min(1).max(64),
+});
+
+export async function prefillAssessmentAction(
+  input: z.infer<typeof prefillInput>,
+): Promise<{
+  ok: boolean;
+  suggestions?: AssessmentPrefillSuggestion[];
+  usedRegistry?: boolean;
+  usedWebsite?: boolean;
+  error?: string;
+}> {
+  const parsed = prefillInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid payload." };
+
+  try {
+    const ctx = await requireOrgContext();
+    await checkAndRecordAiUsage(ctx, {
+      feature: "prefill_assessment",
+      cost: 1,
+      now: new Date(),
+      ...AI_RATE_LIMITS.prefillAssessment,
+    });
+    const company = await getCompany(ctx, parsed.data.companyId);
+    const assessment = await getOrCreateActiveAssessment(ctx, company.id, company);
+    const answers = await getAnswersFor(ctx, assessment);
+    const questionnaire = getQuestionnaire(assessment.questionnaireVersion);
+    const result = await prefillAssessmentAnswers({
+      company: {
+        name: company.name,
+        sector: company.sector,
+        website: company.website,
+        siren: company.siren,
+        headcount: company.headcount,
+      },
+      questionnaire,
+      answers,
+    });
+    return { ok: true, ...result };
+  } catch (error) {
+    if (error instanceof AiNotConfiguredError) return { ok: false, error: error.message };
     return { ok: false, error: actionErrorMessage(error) };
   }
 }

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."ai_usage_feature" ADD VALUE 'prefill_assessment' BEFORE 'assistant_message';

@@ -5,7 +5,7 @@ import { evaluateRateLimit } from "../rate-limit/window";
 import { RateLimitExceededError } from "./errors";
 import type { OrgContext } from "./org-context";
 
-export type AiUsageFeature = "fill_profile" | "assistant_message";
+export type AiUsageFeature = "fill_profile" | "prefill_assessment" | "assistant_message";
 
 /**
  * Checks the caller's trailing-window usage for one AI feature and, if it

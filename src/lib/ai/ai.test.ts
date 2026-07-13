@@ -1,4 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  buildAssessmentPrefillPrompt,
+  parseAssessmentPrefillText,
+  validateAssessmentPrefillSuggestions,
+} from "./assessment-prefill";
 import { buildAssistantSystemPrompt } from "./assistant";
 import { getAiProvider, getAiSetupMessage, isAiConfigured } from "./config";
 import { parseGeminiProfileSuggestionText } from "./model";
@@ -197,5 +202,163 @@ describe("parseGeminiProfileSuggestionText", () => {
     expect(() =>
       parseGeminiProfileSuggestionText(`{"sector":"Robotics","sources":["website"]}`),
     ).toThrow("usable profile suggestion");
+  });
+});
+
+const miniQuestionnaire = {
+  version: "test",
+  scaleLabels: ["Not started", "Early stage", "Partial", "Advanced", "Fully in place"],
+  thresholds: { strength: 75, weakness: 60 },
+  categories: [
+    {
+      id: "governance",
+      label: "Governance",
+      weight: 50,
+      questions: [
+        {
+          id: "gov-10",
+          text: "Is the corporate legal form compatible with a listing?",
+          type: "single_choice" as const,
+          weight: 4,
+          choices: [
+            { id: "sa_sca", label: "SA or SCA", value: 1 },
+            { id: "sas_convertible", label: "SAS with a planned conversion", value: 0.6 },
+            { id: "other", label: "Other form, conversion not assessed", value: 0 },
+          ],
+        },
+        {
+          id: "gov-03",
+          text: "Is an audit committee in place?",
+          type: "yes_no" as const,
+          weight: 5,
+        },
+      ],
+    },
+    {
+      id: "growth",
+      label: "Growth",
+      weight: 50,
+      questions: [
+        {
+          id: "gro-01",
+          text: "What is the company's current annual revenue?",
+          type: "single_choice" as const,
+          weight: 3,
+          choices: [
+            { id: "above_20m", label: "Above €20m", value: 1 },
+            { id: "below_5m", label: "Below €5m", value: 0 },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+describe("assessment AI prefill", () => {
+  it("builds a prompt that limits suggestions to public evidence and unanswered questions", () => {
+    const prompt = buildAssessmentPrefillPrompt({
+      company: {
+        name: "Acme SAS",
+        sector: "Software",
+        website: "https://acme.fr",
+        siren: "123456789",
+        headcount: 42,
+      },
+      pappers: {
+        siren: "123456789",
+        legalName: "ACME SAS",
+        nafLabel: "Edition de logiciels",
+        headcountRange: "20 à 49 salariés",
+        legalForm: "SAS",
+        city: "Paris",
+      },
+      websiteText: "Acme publishes annual revenue above €20m on its official website.",
+      questionnaire: miniQuestionnaire,
+      answers: { "gov-03": true },
+    });
+
+    expect(prompt).toContain("Use ONLY the sources below");
+    expect(prompt).toContain("Do not infer internal practices");
+    expect(prompt).toContain("gov-10");
+    expect(prompt).toContain("gro-01");
+    expect(prompt).not.toContain("gov-03");
+  });
+
+  it("parses Gemini assessment prefill JSON", () => {
+    expect(
+      parseAssessmentPrefillText(`{
+        "suggestions": [
+          {
+            "questionId": "gro-01",
+            "value": "above_20m",
+            "confidence": 0.91,
+            "rationale": "The official website states annual revenue is above €20m.",
+            "sources": ["website"]
+          }
+        ]
+      }`),
+    ).toEqual([
+      {
+        questionId: "gro-01",
+        value: "above_20m",
+        confidence: 0.91,
+        rationale: "The official website states annual revenue is above €20m.",
+        sources: ["website"],
+      },
+    ]);
+  });
+
+  it("keeps only valid, confident and unanswered suggestions", () => {
+    const filtered = validateAssessmentPrefillSuggestions({
+      questionnaire: miniQuestionnaire,
+      answers: { "gov-03": true },
+      suggestions: [
+        {
+          questionId: "gro-01",
+          value: "above_20m",
+          confidence: 0.91,
+          rationale: "Revenue is public.",
+          sources: ["website"],
+        },
+        {
+          questionId: "gov-03",
+          value: false,
+          confidence: 0.95,
+          rationale: "Already answered.",
+          sources: ["website"],
+        },
+        {
+          questionId: "gov-10",
+          value: "invalid_choice",
+          confidence: 0.93,
+          rationale: "Invalid choice.",
+          sources: ["registry"],
+        },
+        {
+          questionId: "missing",
+          value: true,
+          confidence: 0.93,
+          rationale: "Unknown question.",
+          sources: ["website"],
+        },
+        {
+          questionId: "gov-10",
+          value: "other",
+          confidence: 0.55,
+          rationale: "Too uncertain.",
+          sources: ["registry"],
+        },
+      ],
+    });
+
+    expect(filtered).toEqual([
+      {
+        questionId: "gro-01",
+        value: "above_20m",
+        confidence: 0.91,
+        rationale: "Revenue is public.",
+        sources: ["website"],
+      },
+    ]);
   });
 });

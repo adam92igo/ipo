@@ -2,6 +2,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import {
   AI_MODEL,
   GEMINI_MODEL,
+  AiNotConfiguredError,
   getAiProvider,
   getAnthropicClient,
   getGeminiClient,
@@ -20,15 +21,59 @@ interface ChatMessage {
 function requireProvider(): AiProvider {
   const provider = getAiProvider();
   if (!provider) {
-    throw new Error("AI features are not configured — set ANTHROPIC_API_KEY or GEMINI_API_KEY in .env");
+    throw new AiNotConfiguredError();
   }
   return provider;
 }
 
-function extractJsonObject(text: string): unknown {
+export function extractJsonObject(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fenced?.[1] ?? text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
   return JSON.parse(candidate);
+}
+
+export async function generateStructuredJson({
+  prompt,
+  jsonShape,
+  maxTokens,
+}: {
+  prompt: string;
+  jsonShape: string;
+  maxTokens: number;
+}): Promise<unknown> {
+  const provider = requireProvider();
+  if (provider === "anthropic") {
+    const response = await getAnthropicClient().messages.create({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      messages: [
+        {
+          role: "user",
+          content: `${prompt}\n\nReturn only valid JSON matching this shape:\n${jsonShape}`,
+        },
+      ],
+    });
+    const text = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => block.text)
+      .join("");
+    return extractJsonObject(text);
+  }
+
+  const response = await getGeminiClient().models.generateContent({
+    model: GEMINI_MODEL,
+    contents: [
+      prompt,
+      "",
+      "Return only valid JSON matching this shape:",
+      jsonShape,
+    ].join("\n"),
+    config: {
+      maxOutputTokens: maxTokens,
+      responseMimeType: "application/json",
+    },
+  });
+  return extractJsonObject(response.text ?? "");
 }
 
 export function parseGeminiProfileSuggestionText(text: string): CompanyProfileSuggestion {
