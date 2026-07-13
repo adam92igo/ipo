@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 /**
  * Full-journey smoke test: sign-up -> org -> company -> complete assessment
@@ -16,6 +16,33 @@ async function answerAllVisibleQuestions(page: Page, total: number): Promise<voi
   await expect(
     page.getByText(`${total} / ${total} answered in this section`),
   ).toBeVisible();
+}
+
+async function readMotionTiming(locator: Locator): Promise<{
+  animationDurationMs: number;
+  animationIterationCounts: string[];
+  transitionDurationMs: number;
+}> {
+  return locator.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const maxDurationInMs = (durationList: string): number =>
+      Math.max(
+        ...durationList.split(",").map((rawDuration) => {
+          const duration = rawDuration.trim();
+          if (duration.endsWith("ms")) return Number.parseFloat(duration);
+          if (duration.endsWith("s")) return Number.parseFloat(duration) * 1_000;
+          return Number.POSITIVE_INFINITY;
+        }),
+      );
+
+    return {
+      animationDurationMs: maxDurationInMs(style.animationDuration),
+      animationIterationCounts: style.animationIterationCount
+        .split(",")
+        .map((value) => value.trim()),
+      transitionDurationMs: maxDurationInMs(style.transitionDuration),
+    };
+  });
 }
 
 test("IPO readiness journey end to end", async ({ page }) => {
@@ -184,4 +211,97 @@ test("IPO readiness journey end to end", async ({ page }) => {
     () => document.documentElement.scrollWidth,
   );
   expect(documentWidth).toBeLessThanOrEqual(390);
+});
+
+test("mobile cockpit supports keyboard navigation and reduced motion", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sign-up");
+  await page.getByLabel("Full name").fill("Accessibility Tester");
+  await page.getByLabel("Work email").fill(`a11y-${stamp}@example.com`);
+  await page.getByLabel("Password").fill("SmokeTest1234!");
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await page.getByLabel("Organization name").fill(`A11y Org ${stamp}`);
+  await page.getByRole("button", { name: "Create organization" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await expect(
+    page.getByRole("button", { name: "Open navigation" }),
+  ).toBeVisible();
+  // Radix marks the page shell inert while the modal sheet is open, so keep a
+  // DOM locator for state and focus checks after the trigger leaves the a11y tree.
+  const menuButton = page.locator('button[aria-label="Open navigation"]');
+  await menuButton.focus();
+  await expect(menuButton).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  const mobileDialog = page.getByRole("dialog");
+  const mobileOverviewLink = mobileDialog.getByRole("link", {
+    name: "Overview",
+    exact: true,
+  });
+  const mobileDiagnosticLink = mobileDialog.getByRole("link", {
+    name: "Diagnostic",
+    exact: true,
+  });
+  await expect(mobileDialog).toBeVisible();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+  expect(
+    await mobileDialog.evaluate((dialog) => dialog.contains(document.activeElement)),
+  ).toBe(true);
+
+  await page.keyboard.press("Tab");
+  await expect(mobileOverviewLink).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(mobileDiagnosticLink).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(mobileOverviewLink).toBeFocused();
+
+  const defaultMotionTiming = await readMotionTiming(mobileDialog);
+  expect(defaultMotionTiming.animationDurationMs).toBeGreaterThan(0.01);
+  expect(defaultMotionTiming.transitionDurationMs).toBeGreaterThan(0.01);
+
+  await page.keyboard.press("Escape");
+  await expect(mobileDialog).toBeHidden();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(menuButton).toBeFocused();
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      ),
+    )
+    .toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(mobileDialog).toBeVisible();
+
+  const reducedMotionTiming = await readMotionTiming(mobileDialog);
+  expect(reducedMotionTiming.animationDurationMs).toBeLessThanOrEqual(0.01);
+  expect(reducedMotionTiming.transitionDurationMs).toBeLessThanOrEqual(0.01);
+  expect(
+    reducedMotionTiming.animationIterationCounts.every((count) => count === "1"),
+  ).toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(menuButton).toBeFocused();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(390);
+
+  // Playwright has no desktop browser-zoom API. A 640 CSS-pixel viewport is
+  // the objective reflow geometry of a 1280-pixel viewport at 200% zoom, but
+  // this check deliberately does not claim to emulate browser zoom itself.
+  await page.setViewportSize({ width: 640, height: 800 });
+  await expect(menuButton).toBeVisible();
+  const reflowDocumentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(reflowDocumentWidth).toBeLessThanOrEqual(640);
 });
