@@ -1,7 +1,7 @@
 import { TriangleAlert } from "lucide-react";
 import { InstrumentPanel } from "@/components/layout/instrument-panel";
 import { PageHeading } from "@/components/layout/page-heading";
-import { isAiConfigured } from "@/lib/ai/config";
+import { getAiSetupMessage, isAiConfigured } from "@/lib/ai/config";
 import { listCompanies } from "@/lib/data-access/companies";
 import { requireOrgPageContext } from "@/lib/data-access/page-context";
 import { AssistantChat } from "./assistant-chat";
@@ -31,11 +31,9 @@ export default async function AssistantPage() {
             <div className="space-y-1 text-sm">
               <p className="font-semibold text-primary">AI is not configured yet</p>
               <p className="text-muted-foreground">
-                Add <code className="rounded bg-muted px-1">ANTHROPIC_API_KEY</code>{" "}
-                (and optionally{" "}
+                {getAiSetupMessage()} Optionally add{" "}
                 <code className="rounded bg-muted px-1">PAPPERS_API_KEY</code> for
-                registry pre-fill) to <code className="rounded bg-muted px-1">.env</code>,
-                then restart the server.
+                registry pre-fill, then restart the server.
               </p>
             </div>
           </div>

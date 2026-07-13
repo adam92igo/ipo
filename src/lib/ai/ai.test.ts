@@ -1,8 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildAssistantSystemPrompt } from "./assistant";
+import { getAiProvider, getAiSetupMessage, isAiConfigured } from "./config";
+import { parseGeminiProfileSuggestionText } from "./model";
 import { mapPappersResult } from "./pappers";
 import { buildProfileFillPrompt } from "./profile-fill";
 import { UnsafeUrlError, assertPublicHttpUrl, htmlToText } from "./website";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("assertPublicHttpUrl (SSRF guard)", () => {
   it("accepts public http(s) hosts", () => {
@@ -132,5 +138,64 @@ describe("buildAssistantSystemPrompt", () => {
     const prompt = buildAssistantSystemPrompt();
     expect(prompt).toContain("IPO");
     expect(prompt).not.toContain("undefined");
+  });
+});
+
+describe("AI provider config", () => {
+  it("keeps Anthropic as the auto provider when both providers are configured", () => {
+    vi.stubEnv("AI_PROVIDER", "auto");
+    vi.stubEnv("ANTHROPIC_API_KEY", "anthropic-key");
+    vi.stubEnv("GEMINI_API_KEY", "gemini-key");
+
+    expect(getAiProvider()).toBe("anthropic");
+    expect(isAiConfigured()).toBe(true);
+  });
+
+  it("uses Gemini explicitly when AI_PROVIDER is gemini and Gemini is configured", () => {
+    vi.stubEnv("AI_PROVIDER", "gemini");
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "gemini-key");
+
+    expect(getAiProvider()).toBe("gemini");
+    expect(isAiConfigured()).toBe(true);
+  });
+
+  it("returns a provider-neutral setup message when no provider is configured", () => {
+    vi.stubEnv("AI_PROVIDER", "auto");
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "");
+
+    expect(isAiConfigured()).toBe(false);
+    expect(getAiSetupMessage()).toContain("ANTHROPIC_API_KEY");
+    expect(getAiSetupMessage()).toContain("GEMINI_API_KEY");
+  });
+});
+
+describe("parseGeminiProfileSuggestionText", () => {
+  it("extracts and validates a Gemini JSON profile suggestion", () => {
+    expect(
+      parseGeminiProfileSuggestionText(`Here is the JSON:
+      {
+        "sector": "Industrial robotics",
+        "headcount": 42,
+        "siren": "123456789",
+        "website": "https://acme.fr",
+        "summary": "Acme builds industrial robots for factories.",
+        "sources": ["registry", "website"]
+      }`),
+    ).toEqual({
+      sector: "Industrial robotics",
+      headcount: 42,
+      siren: "123456789",
+      website: "https://acme.fr",
+      summary: "Acme builds industrial robots for factories.",
+      sources: ["registry", "website"],
+    });
+  });
+
+  it("rejects malformed Gemini profile suggestions", () => {
+    expect(() =>
+      parseGeminiProfileSuggestionText(`{"sector":"Robotics","sources":["website"]}`),
+    ).toThrow("usable profile suggestion");
   });
 });
