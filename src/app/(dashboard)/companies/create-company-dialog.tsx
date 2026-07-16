@@ -81,8 +81,10 @@ function CompanyForm({
   const [aiSummary, setAiSummary] = useState<string | null>(null);
 
   useEffect(() => {
-    if (state.ok) onSuccess();
-    else if (state.error) toast.error(state.error);
+    if (state.ok) {
+      if (state.warning) toast.warning(state.warning);
+      onSuccess();
+    } else if (state.error) toast.error(state.error);
   }, [state, onSuccess]);
 
   const set = (field: keyof FormValues) => (event: React.ChangeEvent<HTMLInputElement>) =>

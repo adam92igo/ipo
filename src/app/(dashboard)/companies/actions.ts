@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import { requireOrgContext } from "@/lib/data-access/context";
 import { createCompany } from "@/lib/data-access/companies";
 import { CompanyAlreadyExistsError, ForbiddenError } from "@/lib/data-access/errors";
+import { verifySirenAtPappers } from "@/lib/ai/pappers";
 import { companyInputSchema } from "@/lib/validation/company";
 
 export interface CreateCompanyState {
   ok: boolean;
   error?: string;
+  warning?: string;
   fieldErrors?: Record<string, string[]>;
 }
 
@@ -29,6 +31,20 @@ export async function createCompanyAction(
     return { ok: false, fieldErrors: flat.fieldErrors as Record<string, string[]> };
   }
 
+  let warning: string | undefined;
+  if (parsed.data.siren) {
+    const verification = await verifySirenAtPappers(parsed.data.siren);
+    if (verification === "not_found") {
+      return {
+        ok: false,
+        fieldErrors: { siren: ["This SIREN was not found in the French business registry."] },
+      };
+    }
+    if (verification === "unreachable") {
+      warning = "Could not verify the SIREN against the French business registry right now.";
+    }
+  }
+
   try {
     const ctx = await requireOrgContext();
     await createCompany(ctx, parsed.data);
@@ -44,5 +60,5 @@ export async function createCompanyAction(
 
   revalidatePath("/companies");
   revalidatePath("/dashboard");
-  return { ok: true };
+  return { ok: true, warning };
 }
