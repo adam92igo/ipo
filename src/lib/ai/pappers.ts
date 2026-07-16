@@ -55,3 +55,30 @@ export async function searchPappers(name: string): Promise<PappersCompanyData | 
     return null;
   }
 }
+
+const pappersEntrepriseSchema = z.object({ siren: z.string() });
+
+export type SirenVerificationResult = "confirmed" | "not_found" | "unreachable";
+
+/**
+ * Confirms a SIREN exists in the Pappers registry at save time. Degrades to
+ * "unreachable" (never blocks the save) on any provider hiccup — unconfigured,
+ * network error, timeout, or an unusable response shape — consistent with how
+ * the AI provider itself degrades when unavailable. Only a confirmed "the
+ * registry has no such SIREN" (404) is treated as a rejection.
+ */
+export async function verifySirenAtPappers(siren: string): Promise<SirenVerificationResult> {
+  if (!isPappersConfigured()) return "unreachable";
+  try {
+    const url = new URL("https://api.pappers.fr/v2/entreprise");
+    url.searchParams.set("siren", siren);
+    url.searchParams.set("api_token", process.env.PAPPERS_API_KEY!);
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (response.status === 404) return "not_found";
+    if (!response.ok) return "unreachable";
+    const payload = await response.json();
+    return pappersEntrepriseSchema.safeParse(payload).success ? "confirmed" : "unreachable";
+  } catch {
+    return "unreachable";
+  }
+}
