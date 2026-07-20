@@ -1,11 +1,14 @@
 import { Info } from "lucide-react";
+import Link from "next/link";
 import { MetricScale } from "@/components/cockpit/metric-scale";
 import { ValuationRangeChart } from "@/components/charts/valuation-range-chart";
 import { InstrumentPanel } from "@/components/layout/instrument-panel";
 import { PageHeading } from "@/components/layout/page-heading";
+import { Button } from "@/components/ui/button";
 import { equityRangeOf, type MethodResult } from "@/engines/valuation";
 import { listFinancialsFor } from "@/lib/data-access/financials";
 import { getCompany } from "@/lib/data-access/companies";
+import { getCompanySharePriceFor } from "@/lib/data-access/share-structure";
 import { orNotFound, requireOrgPageContext } from "@/lib/data-access/page-context";
 import {
   getLatestValuationRunFor,
@@ -15,6 +18,7 @@ import { formatEurCompact } from "@/lib/format";
 import { getValuationRefs } from "@/lib/valuation-refs";
 import { FinancialsManager } from "./financials-manager";
 import { RunValuationButton } from "./run-valuation-button";
+import { SharePricePanel } from "./share-price-panel";
 
 export const metadata = { title: "Valuation" };
 
@@ -35,9 +39,10 @@ export default async function ValuationPage({
   const ctx = await requireOrgPageContext();
 
   const company = await orNotFound(() => getCompany(ctx, companyId));
-  const [financials, latestRun] = await Promise.all([
+  const [financials, latestRun, sharePrice] = await Promise.all([
     listFinancialsFor(ctx, company),
     getLatestValuationRunFor(ctx, company),
+    getCompanySharePriceFor(ctx, company),
   ]);
 
   const results = latestRun ? (latestRun.results as ValuationRunResults) : null;
@@ -63,11 +68,18 @@ export default async function ValuationPage({
         title={company.name}
         description="Indicative equity value from three deterministic methods — not investment advice."
         actions={
-          <RunValuationButton
-            companyId={company.id}
-            hasFinancials={financials.length > 0}
-            hasExistingRun={latestRun !== null}
-          />
+          <div className="flex gap-2">
+            <RunValuationButton
+              companyId={company.id}
+              hasFinancials={financials.length > 0}
+              hasExistingRun={latestRun !== null}
+            />
+            {financials.length > 0 && (
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/companies/${company.id}/forecast`}>Forecast →</Link>
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -128,6 +140,18 @@ export default async function ValuationPage({
               </div>
             </InstrumentPanel>
           </section>
+
+          <InstrumentPanel
+            eyebrow="Prix de l'action"
+            title="Indicative share price"
+          >
+            <SharePricePanel
+              companyId={company.id}
+              canWrite={canWrite}
+              result={sharePrice?.result ?? null}
+              structure={sharePrice?.structure ?? null}
+            />
+          </InstrumentPanel>
 
           {financialHistory}
 

@@ -153,6 +153,28 @@ export function matchSector(sector: string, refs: ValuationRefs): SectorRefs {
   return best?.entry ?? refs.sectors.default;
 }
 
+/**
+ * Same longest-alias match as matchSector, but returns the sector KEY (e.g.
+ * "software") rather than the entry — used to look up sibling config keyed by
+ * the same sector taxonomy (peer companies). Returns "default" when unmatched.
+ */
+export function matchSectorKey(sector: string, refs: ValuationRefs): string {
+  const needle = sector.toLowerCase();
+  let best: { key: string; aliasLength: number } | null = null;
+  for (const [key, entry] of Object.entries(refs.sectors)) {
+    if (key === "default") continue;
+    for (const alias of entry.aliases) {
+      if (
+        needle.includes(alias.toLowerCase()) &&
+        (!best || alias.length > best.aliasLength)
+      ) {
+        best = { key, aliasLength: alias.length };
+      }
+    }
+  }
+  return best?.key ?? "default";
+}
+
 export interface PreparedValuation {
   sector: SectorRefs;
   methods: MethodResult[];

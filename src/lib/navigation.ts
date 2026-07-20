@@ -2,6 +2,9 @@ export type DashboardNavLabel =
   | "Overview"
   | "Diagnostic"
   | "Valuation"
+  | "Forecast"
+  | "Benchmark"
+  | "Market"
   | "Roadmap"
   | "Assistant";
 
@@ -32,10 +35,25 @@ export function getDashboardNav(companyId: string | null): DashboardNavItem[] {
     },
     {
       index: "03",
+      label: "Forecast",
+      href: companyId ? `/companies/${companyId}/forecast` : setup,
+    },
+    {
+      index: "04",
+      label: "Benchmark",
+      href: companyId ? `/companies/${companyId}/benchmark` : setup,
+    },
+    {
+      index: "05",
+      label: "Market",
+      href: companyId ? `/companies/${companyId}/market-research` : setup,
+    },
+    {
+      index: "06",
       label: "Roadmap",
       href: companyId ? `/companies/${companyId}/roadmap` : setup,
     },
-    { index: "04", label: "Assistant", href: "/assistant" },
+    { index: "07", label: "Assistant", href: "/assistant" },
   ];
 }
 
@@ -56,5 +74,8 @@ export function isDashboardNavActive(
     );
   }
   if (label === "Valuation") return matchesRoute(pathname, `${base}/valuation`);
+  if (label === "Forecast") return matchesRoute(pathname, `${base}/forecast`);
+  if (label === "Benchmark") return matchesRoute(pathname, `${base}/benchmark`);
+  if (label === "Market") return matchesRoute(pathname, `${base}/market-research`);
   return matchesRoute(pathname, `${base}/roadmap`);
 }

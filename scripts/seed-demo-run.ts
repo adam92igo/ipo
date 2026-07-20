@@ -15,6 +15,7 @@ import {
   updateRoadmapItemStatus,
 } from "../src/lib/data-access/roadmap";
 import { runValuation, type ValuationRunResults } from "../src/lib/data-access/valuations";
+import { upsertShareStructure } from "../src/lib/data-access/share-structure";
 import { isOrgRole, type OrgContext } from "../src/lib/data-access/org-context";
 import { CURRENT_QUESTIONNAIRE_VERSION, getQuestionnaire } from "../src/lib/questionnaire";
 import type { Answers, AnswerValue, Question, Questionnaire } from "../src/engines/scoring/types";
@@ -124,6 +125,12 @@ async function seedReadyCompany(ctx: OrgContext, questionnaire: Questionnaire): 
   const run = await runValuation(ctx, created.id);
   const results = run.results as ValuationRunResults;
 
+  // Cap table: 5,000,000 existing shares, 1,250,000 new at the IPO (~20% dilution).
+  await upsertShareStructure(ctx, created.id, {
+    existingShares: 5_000_000,
+    newShares: 1_250_000,
+  });
+
   console.log(
     `  score ${completed.globalScore}, ${items.length} roadmap items, valuation midpoint ${results.aggregated.mid.toLocaleString("en-US")} EUR`,
   );
@@ -164,6 +171,12 @@ async function seedMidJourneyCompany(ctx: OrgContext, questionnaire: Questionnai
   for (const year of years) await upsertFinancialYear(ctx, created.id, year);
   const run = await runValuation(ctx, created.id);
   const results = run.results as ValuationRunResults;
+
+  // Cap table: 8,000,000 existing shares, no IPO issuance decided yet (0 new).
+  await upsertShareStructure(ctx, created.id, {
+    existingShares: 8_000_000,
+    newShares: 0,
+  });
 
   console.log(
     `  score ${completed.globalScore}, ${items.length} roadmap items, valuation midpoint ${results.aggregated.mid.toLocaleString("en-US")} EUR`,

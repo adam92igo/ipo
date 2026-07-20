@@ -1,0 +1,8 @@
+{
+  "version": "v1",
+  "note": "Deterministic multi-year financial projection settings for French SME IPO candidates. The base growth rate is derived from the company's own historical revenue CAGR (clamped), then decays linearly to a long-run terminal rate over the horizon — a company cannot outgrow its market indefinitely. The scenario spread widens the base path into an optimistic/pessimistic band. These are projection DEFAULTS for an indicative outlook, not a forecast of certain outcomes and not investment advice.",
+  "horizonYears": 5,
+  "terminalGrowth": 0.018,
+  "growthClamp": { "min": 0, "max": 0.25 },
+  "scenarioSpread": 0.3
+}

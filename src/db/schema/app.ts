@@ -101,6 +101,29 @@ export const companyFinancials = pgTable(
   ],
 );
 
+// Cap-table basis for the indicative share price. One row per company:
+// existing shares (pre-IPO) and new shares issued at the IPO capital raise.
+export const companyShareStructure = pgTable(
+  "company_share_structure",
+  {
+    id: id(),
+    organizationId: orgId(),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    // Share counts are exact integers; numeric keeps very large cap tables safe.
+    existingShares: numeric("existing_shares", { precision: 18, scale: 0 }).notNull(),
+    newShares: numeric("new_shares", { precision: 18, scale: 0 })
+      .notNull()
+      .default("0"),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("share_structure_company_uq").on(t.companyId),
+    index("share_structure_org_idx").on(t.organizationId),
+  ],
+);
+
 export const assessment = pgTable(
   "assessment",
   {

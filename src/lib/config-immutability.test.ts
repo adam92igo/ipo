@@ -24,6 +24,12 @@ const PINNED = {
     "sha256:d71e489f67f8753eded012ff4d50728f0e865f60af8b00260e5af160834301b1",
   "config/valuation-refs.v2.json":
     "sha256:dbdb8baa30d55b12de9d5fd8736c2c94de5327fc658316f72888b11bd5206153",
+  "config/forecast-settings.v1.json":
+    "sha256:638cf3452e01f7572fa628ba7b5f8abae6ca4f4f147c51cca163f5e35e57e990",
+  "config/peer-companies.v1.json":
+    "sha256:d868e0ab12423ba23c5269be0281c557f09438797236c6ef41dbfca0ec5b2dc2",
+  "config/market-research.v1.json":
+    "sha256:497cc1c7a19ef98919168c06ba718ffcb205817cd4963b1f537c49ecedbff565",
 };
 
 const hash = (path: string) =>

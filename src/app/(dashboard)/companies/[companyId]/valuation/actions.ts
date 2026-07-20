@@ -9,7 +9,9 @@ import {
   upsertFinancialYear,
 } from "@/lib/data-access/financials";
 import { runValuation } from "@/lib/data-access/valuations";
+import { upsertShareStructure } from "@/lib/data-access/share-structure";
 import { financialYearSchema } from "@/lib/validation/financials";
+import { shareStructureSchema } from "@/lib/validation/share-structure";
 
 const companyIdSchema = z.string().min(1).max(64);
 
@@ -93,5 +95,41 @@ export async function runValuationAction(input: {
   }
 
   revalidatePath(`/companies/${parsed.data.companyId}/valuation`);
+  return { ok: true };
+}
+
+export async function saveShareStructureAction(
+  companyId: string,
+  _prev: FinancialsActionState,
+  formData: FormData,
+): Promise<FinancialsActionState> {
+  const id = companyIdSchema.safeParse(companyId);
+  if (!id.success) return { ok: false, error: "Invalid company." };
+
+  const readCount = (name: string) => {
+    const raw = formData.get(name);
+    return raw === null || raw === "" ? undefined : raw;
+  };
+  const parsed = shareStructureSchema.safeParse({
+    existingShares: readCount("existingShares"),
+    newShares: readCount("newShares") ?? 0,
+  });
+  if (!parsed.success) {
+    const flat = parsed.error.flatten();
+    return {
+      ok: false,
+      error: flat.formErrors[0],
+      fieldErrors: flat.fieldErrors as Record<string, string[]>,
+    };
+  }
+
+  try {
+    const ctx = await requireOrgContext();
+    await upsertShareStructure(ctx, id.data, parsed.data);
+  } catch (error) {
+    return { ok: false, error: actionErrorMessage(error) };
+  }
+
+  revalidatePath(`/companies/${id.data}/valuation`);
   return { ok: true };
 }

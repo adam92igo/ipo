@@ -58,7 +58,8 @@ export default async function DashboardPage() {
             Add your company
           </h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Create the company profile to unlock the diagnostic, valuation, roadmap, and assistant.
+            Create the company profile to unlock the diagnostic, valuation,
+            forecast, benchmark, market research, roadmap, and assistant.
           </p>
           <Button asChild className="mt-5">
             <Link href="/companies">Add a company</Link>
@@ -72,8 +73,12 @@ export default async function DashboardPage() {
   const assessmentHref = `/companies/${company.id}/assessment`;
   const resultsHref = `/companies/${company.id}/results`;
   const valuationHref = `/companies/${company.id}/valuation`;
+  const forecastHref = `/companies/${company.id}/forecast`;
+  const benchmarkHref = `/companies/${company.id}/benchmark`;
+  const marketHref = `/companies/${company.id}/market-research`;
   const roadmapHref = `/companies/${company.id}/roadmap`;
   const hasAssessment = assessment.kind === "available";
+  const hasFinancials = snapshot.financialYearCount > 0;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -312,6 +317,121 @@ export default async function DashboardPage() {
               action={moduleAction(valuationHref, valuation.kind === "missing_financials" ? "Add financials" : "Run valuation")}
             />
           )}
+        </InstrumentPanel>
+
+        <InstrumentPanel
+          eyebrow="Financial outlook"
+          title="Forecast horizon"
+          action={moduleAction(forecastHref, hasFinancials ? "Open forecast" : "Add financials")}
+        >
+          {hasFinancials ? (
+            <div>
+              <p className="text-sm text-muted-foreground">
+                A deterministic 5-year projection of revenue, EBITDA and free
+                cash flow, built from{" "}
+                <span className="font-semibold text-primary">
+                  {snapshot.financialYearCount}
+                </span>{" "}
+                stored {snapshot.financialYearCount === 1 ? "year" : "years"} of
+                history.
+              </p>
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="border-t pt-3">
+                  <dt className="instrument-label">Horizon</dt>
+                  <dd className="mt-1 font-medium text-primary">5 years</dd>
+                </div>
+                <div className="border-t pt-3">
+                  <dt className="instrument-label">Latest actual</dt>
+                  <dd className="mt-1 font-medium text-primary">
+                    {snapshot.latestFinancialYear ?? "—"}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          ) : (
+            <SnapshotState
+              title="Project the numbers forward"
+              description="Add at least one fiscal year of financials to unlock a multi-year revenue, EBITDA and cash-flow forecast."
+              action={moduleAction(valuationHref, "Add financials")}
+            />
+          )}
+        </InstrumentPanel>
+
+        <InstrumentPanel
+          eyebrow="Peer comparison"
+          title="Sector benchmark"
+          action={moduleAction(benchmarkHref, "Open benchmark")}
+        >
+          <p className="text-sm text-muted-foreground">
+            See how {company.name} compares to its{" "}
+            <span className="font-semibold text-primary">{company.sector}</span>{" "}
+            sector — implied multiples, financial ratios and IPO-readiness
+            against the target, next to curated listed peers.
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="border-t pt-3">
+              <dt className="instrument-label">Ratios</dt>
+              <dd className="mt-1 font-medium text-primary">
+                {hasFinancials ? "From latest accounts" : "Add financials"}
+              </dd>
+            </div>
+            <div className="border-t pt-3">
+              <dt className="instrument-label">Readiness</dt>
+              <dd className="mt-1 font-medium text-primary">
+                {hasAssessment ? "Scored vs target" : "Complete diagnostic"}
+              </dd>
+            </div>
+          </dl>
+        </InstrumentPanel>
+
+        <InstrumentPanel
+          eyebrow="Prix de l'action"
+          title="Share price"
+          action={moduleAction(valuationHref, valuation.kind === "available" ? "Voir le prix" : "Lancer la valorisation")}
+        >
+          {valuation.kind === "available" ? (
+            <p className="text-sm text-muted-foreground">
+              Prix indicatif par action dérivé de la fourchette de valeur, avant
+              et après dilution IPO. Saisissez le nombre d&apos;actions sur la
+              page Valuation pour l&apos;afficher.
+            </p>
+          ) : (
+            <SnapshotState
+              title="Calculez le prix par action"
+              description="Lancez d'abord la valorisation, puis saisissez le nombre d'actions pour obtenir un prix indicatif pré et post-dilution."
+              action={moduleAction(valuationHref, valuation.kind === "missing_financials" ? "Ajouter les comptes" : "Lancer la valorisation")}
+            />
+          )}
+        </InstrumentPanel>
+
+        <InstrumentPanel
+          eyebrow="Where to list"
+          title="Market research"
+          action={moduleAction(marketHref, "Open market research")}
+        >
+          <p className="text-sm text-muted-foreground">
+            The IPO climate for{" "}
+            <span className="font-semibold text-primary">{company.sector}</span>,
+            its market drivers, and which Euronext segment — Access, Access+,
+            Growth or the regulated market — fits {company.name} by size and
+            track record.
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="border-t pt-3">
+              <dt className="instrument-label">Segment fit</dt>
+              <dd className="mt-1 font-medium text-primary">
+                {valuation.kind === "available"
+                  ? "From valuation size"
+                  : hasFinancials
+                    ? "From revenue proxy"
+                    : "Add financials"}
+              </dd>
+            </div>
+            <div className="border-t pt-3">
+              <dt className="instrument-label">Sector climate</dt>
+              <dd className="mt-1 font-medium text-primary">Curated overview</dd>
+            </div>
+          </dl>
         </InstrumentPanel>
 
         <InstrumentPanel
