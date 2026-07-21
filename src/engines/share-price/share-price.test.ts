@@ -46,7 +46,7 @@ describe("computeSharePrice", () => {
     expect(r.dilution).toBe(0);
     expect(r.grossProceedsMid).toBe(0);
     expect(r.postMoney).toEqual(r.preMoney);
-    expect(r.assumptions.some((a) => a.includes("Aucune nouvelle action"))).toBe(
+    expect(r.assumptions.some((a) => a.includes("No new shares issued"))).toBe(
       true,
     );
   });
