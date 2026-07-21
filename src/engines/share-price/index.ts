@@ -19,7 +19,7 @@ const round2 = (x: number) => Math.round(x * 100) / 100;
 const round0 = (x: number) => Math.round(x);
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
-/** Divise une fourchette equity par un nombre d'actions (prix par action). */
+/** Divides an equity range by a number of shares (price per share). */
 function pricePerShare(equity: Range, shareCount: number): SharePriceRange {
   return {
     shareCount,
@@ -37,7 +37,7 @@ function pricePerShare(equity: Range, shareCount: number): SharePriceRange {
  * - Dilution   : nouvelles / (existantes + nouvelles).
  *
  * Pur : pas d'I/O, pas d'IA, pas de dates. Mêmes entrées => même sortie.
- * Note : c'est une valeur INDICATIVE (la valeur equity est déjà une
+ * Note: this is an INDICATIVE value (the equity value is already an
  * fourchette), pas un prix d'offre — celui-ci est fixé par le bookbuilding.
  */
 export function computeSharePrice(inputs: ShareInputs): SharePriceResult {
@@ -45,11 +45,11 @@ export function computeSharePrice(inputs: ShareInputs): SharePriceResult {
 
   if (!Number.isFinite(existingShares) || existingShares <= 0)
     throw new InvalidShareInputError(
-      "le nombre d'actions existantes doit être strictement positif",
+      "the number of existing shares must be strictly positive",
     );
   if (!Number.isFinite(newShares) || newShares < 0)
     throw new InvalidShareInputError(
-      "le nombre de nouvelles actions ne peut pas être négatif",
+      "the number of new shares cannot be negative",
     );
   if (equity.low > equity.mid || equity.mid > equity.high)
     throw new InvalidShareInputError(
@@ -64,18 +64,18 @@ export function computeSharePrice(inputs: ShareInputs): SharePriceResult {
   const grossProceedsMid = round0(newShares * postMoney.mid);
 
   const assumptions: string[] = [
-    `Prix pré-money = valeur equity ÷ ${round0(existingShares).toLocaleString("fr-FR")} actions existantes`,
+    `Pre-money price = equity value ÷ ${round0(existingShares).toLocaleString("en-GB")} existing shares`,
   ];
   if (newShares > 0) {
     assumptions.push(
-      `Prix post-money = valeur equity ÷ ${round0(totalShares).toLocaleString("fr-FR")} actions (dilution ${pct(dilution)})`,
-      `Produit brut indicatif ≈ ${grossProceedsMid.toLocaleString("fr-FR")} EUR (mid)`,
+      `Post-money price = equity value ÷ ${round0(totalShares).toLocaleString("en-GB")} shares (${pct(dilution)} dilution)`,
+      `Indicative gross proceeds ≈ ${grossProceedsMid.toLocaleString("en-GB")} EUR (mid)`,
     );
   } else {
-    assumptions.push("Aucune nouvelle action émise — prix post-money = pré-money");
+    assumptions.push("No new shares issued — post-money price = pre-money");
   }
   assumptions.push(
-    "Valeur indicative dérivée d'une fourchette d'estimation ; le prix d'offre réel est fixé au bookbuilding.",
+    "Indicative value derived from an estimate range; the actual offer price is set at bookbuilding.",
   );
 
   return { preMoney, postMoney, dilution, grossProceedsMid, assumptions };

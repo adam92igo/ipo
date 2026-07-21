@@ -23,14 +23,14 @@ import {
 
 const initialState: FinancialsActionState = { ok: false };
 
-const eur4 = new Intl.NumberFormat("fr-FR", {
+const eur4 = new Intl.NumberFormat("en-GB", {
   style: "currency",
   currency: "EUR",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 const price = (v: number) => eur4.format(v);
-const int = (v: number) => v.toLocaleString("fr-FR");
+const int = (v: number) => v.toLocaleString("en-GB");
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
 function EditForm({
@@ -55,7 +55,7 @@ function EditForm({
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <Label htmlFor="existingShares">Actions existantes (avant IPO)</Label>
+        <Label htmlFor="existingShares">Existing shares (pre-IPO)</Label>
         <Input
           id="existingShares"
           name="existingShares"
@@ -69,7 +69,7 @@ function EditForm({
         <FieldError errors={state.fieldErrors?.existingShares} />
       </div>
       <div>
-        <Label htmlFor="newShares">Nouvelles actions émises à l&apos;IPO</Label>
+        <Label htmlFor="newShares">New shares issued at IPO</Label>
         <Input
           id="newShares"
           name="newShares"
@@ -81,11 +81,11 @@ function EditForm({
         />
         <FieldError errors={state.fieldErrors?.newShares} />
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Laisser à 0 s&apos;il n&apos;y a pas d&apos;augmentation de capital.
+          Leave at 0 if there is no capital increase.
         </p>
       </div>
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Enregistrement…" : "Enregistrer"}
+        {pending ? "Saving…" : "Save"}
       </Button>
     </form>
   );
@@ -136,15 +136,14 @@ export function SharePricePanel({
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <Pencil data-slot="icon" />
-          {structure ? "Modifier" : "Saisir les actions"}
+          {structure ? "Edit" : "Enter shares"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Structure du capital</DialogTitle>
+          <DialogTitle>Share structure</DialogTitle>
           <DialogDescription>
-            Le prix par action = valeur des capitaux propres ÷ nombre
-            d&apos;actions.
+            Share price = equity value ÷ number of shares.
           </DialogDescription>
         </DialogHeader>
         <EditForm
@@ -161,14 +160,13 @@ export function SharePricePanel({
     return (
       <div className="flex flex-col items-start gap-3">
         <p className="text-sm text-muted-foreground">
-          Saisissez le nombre d&apos;actions pour obtenir un prix indicatif par
-          action, avant et après dilution.
+          Enter the number of shares to get an indicative price per share, before and after dilution.
         </p>
         {canWrite ? (
           editButton
         ) : (
           <p className="text-xs text-muted-foreground">
-            Un administrateur doit saisir la structure du capital.
+            An administrator must enter the share structure.
           </p>
         )}
       </div>
@@ -180,18 +178,18 @@ export function SharePricePanel({
       <div className="flex items-start justify-between gap-4">
         <div className="grid flex-1 gap-6 sm:grid-cols-2">
           <PriceBlock
-            label="Prix pré-money"
-            sub={`${int(result.preMoney.shareCount)} actions existantes`}
+            label="Pre-money price"
+            sub={`${int(result.preMoney.shareCount)} existing shares`}
             low={result.preMoney.low}
             mid={result.preMoney.mid}
             high={result.preMoney.high}
           />
           <PriceBlock
-            label="Prix post-money (dilué)"
+            label="Post-money price (diluted)"
             sub={
               structure.newShares > 0
-                ? `${int(result.postMoney.shareCount)} actions · dilution ${pct(result.dilution)}`
-                : "Aucune dilution"
+                ? `${int(result.postMoney.shareCount)} shares · ${pct(result.dilution)} dilution`
+                : "No dilution"
             }
             low={result.postMoney.low}
             mid={result.postMoney.mid}
@@ -203,9 +201,9 @@ export function SharePricePanel({
 
       {structure.newShares > 0 && (
         <div className="mt-6 border-t border-border pt-4">
-          <p className="instrument-label">Produit brut indicatif (mid)</p>
+          <p className="instrument-label">Indicative gross proceeds (mid)</p>
           <p className="mt-1 font-utility text-lg font-semibold tabular-nums text-primary">
-            {int(result.grossProceedsMid)} €
+            €{int(result.grossProceedsMid)}
           </p>
         </div>
       )}

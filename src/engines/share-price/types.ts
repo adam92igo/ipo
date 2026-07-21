@@ -7,18 +7,18 @@ export type { Range };
 export interface ShareInputs {
   /** Fourchette de valeur des capitaux propres (equity), EUR. */
   equity: Range;
-  /** Nombre d'actions existantes (avant IPO), > 0. */
+  /** Number of existing shares (pre-IPO), > 0. */
   existingShares: number;
   /**
-   * Nouvelles actions émises lors de l'augmentation de capital IPO (>= 0).
+   * New shares issued in the IPO capital increase (>= 0).
    * 0 => pas de dilution, le prix post-IPO égale le prix pré-IPO.
    */
   newShares: number;
 }
 
-/** Prix par action pour une base d'actions donnée (fourchette). */
+/** Price per share for a given share base (range). */
 export interface SharePriceRange {
-  /** Base d'actions utilisée pour ce prix. */
+  /** Share base used for this price. */
   shareCount: number;
   low: number;
   mid: number;

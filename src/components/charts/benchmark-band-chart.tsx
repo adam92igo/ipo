@@ -1,12 +1,7 @@
 import type { BenchmarkMetric } from "@/engines/benchmark";
 
-/**
- * One row per metric: a low–high reference band with a mid tick and, when
- * derivable, a marker showing where the company sits. Position is stated in
- * text (below/within/above) so meaning never rests on colour alone.
- */
 const W = 640;
-const ROW_H = 52;
+const ROW_H = 58;
 const LABEL_W = 190;
 const PAD_R = 64;
 
@@ -20,7 +15,7 @@ const fmt = (v: number, unit: BenchmarkMetric["unit"]) =>
   unit === "x" ? `${v}x` : unit === "%" ? `${v}%` : `${v}`;
 
 export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) {
-  const height = metrics.length * ROW_H + 8;
+  const height = metrics.length * ROW_H + 34;
 
   return (
     <div className="min-w-0 overflow-x-auto pb-2">
@@ -33,8 +28,7 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
       >
         {metrics.map((m, i) => {
           const cy = i * ROW_H + ROW_H / 2;
-          // Scale spans the reference band with 25% headroom each side so an
-          // out-of-band company marker stays visible.
+          const measured = m.value !== null && m.position !== null;
           const pad = (m.reference.high - m.reference.low) * 0.25 || 1;
           const min = m.reference.low - pad;
           const max = m.reference.high + pad;
@@ -46,7 +40,6 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
 
           return (
             <g key={m.key}>
-              {/* metric label */}
               <text x={0} y={cy - 4} fontSize={12.5} className="fill-foreground">
                 {m.label}
               </text>
@@ -54,30 +47,28 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
                 x={0}
                 y={cy + 12}
                 fontSize={10.5}
-                className="fill-muted-foreground"
+                className={measured ? "fill-foreground" : "fill-muted-foreground"}
               >
-                {m.value === null
-                  ? "n/a"
-                  : `${fmt(m.value, m.unit)} · ${
+                {measured
+                  ? `${fmt(m.value as number, m.unit)} · ${
                       m.position === "within"
                         ? "in range"
                         : m.position === "above"
                           ? "above range"
                           : "below range"
-                    }`}
+                    }`
+                  : "sector band only"}
               </text>
 
-              {/* track */}
               <line
                 x1={LABEL_W}
                 x2={W - PAD_R}
                 y1={cy}
                 y2={cy}
                 stroke="var(--color-primary)"
-                strokeOpacity={0.12}
+                strokeOpacity={0.1}
                 strokeWidth={1}
               />
-              {/* reference band */}
               <line
                 x1={x(m.reference.low)}
                 x2={x(m.reference.high)}
@@ -86,26 +77,24 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
                 stroke="var(--color-chart-5)"
                 strokeWidth={7}
                 strokeLinecap="round"
-                opacity={0.5}
+                opacity={measured ? 0.55 : 0.28}
               >
                 <title>
                   {`Sector band: ${fmt(m.reference.low, m.unit)} – ${fmt(m.reference.high, m.unit)}`}
                 </title>
               </line>
-              {/* band mid tick */}
-              <line
-                x1={x(m.reference.mid)}
-                x2={x(m.reference.mid)}
-                y1={cy - 6}
-                y2={cy + 6}
-                stroke="var(--color-primary)"
-                strokeOpacity={0.4}
-                strokeWidth={1.5}
-              />
-              {/* band endpoint labels */}
+
+              <path
+                d={`M ${x(m.reference.mid)} ${cy + 9} l 3 3 l -3 3 l -3 -3 z`}
+                fill="var(--color-primary)"
+                opacity={0.35}
+              >
+                <title>{`Sector median: ${fmt(m.reference.mid, m.unit)}`}</title>
+              </path>
+
               <text
                 x={x(m.reference.low)}
-                y={cy + 20}
+                y={cy + 24}
                 textAnchor="middle"
                 fontSize={9.5}
                 className="fill-muted-foreground"
@@ -114,7 +103,7 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
               </text>
               <text
                 x={x(m.reference.high)}
-                y={cy + 20}
+                y={cy + 24}
                 textAnchor="middle"
                 fontSize={9.5}
                 className="fill-muted-foreground"
@@ -122,34 +111,42 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
                 {fmt(m.reference.high, m.unit)}
               </text>
 
-              {/* company marker */}
-              {m.value !== null && m.position !== null && (
+              {measured && (
                 <g>
                   <circle
-                    cx={clampX(m.value)}
+                    cx={clampX(m.value as number)}
                     cy={cy}
-                    r={6}
-                    fill={POSITION_COLOR[m.position]}
+                    r={6.5}
+                    fill={POSITION_COLOR[m.position as string]}
                     stroke="var(--background)"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                   >
-                    <title>{`Company: ${fmt(m.value, m.unit)}`}</title>
+                    <title>{`Company: ${fmt(m.value as number, m.unit)}`}</title>
                   </circle>
                   <text
-                    x={clampX(m.value)}
+                    x={clampX(m.value as number)}
                     y={cy - 12}
                     textAnchor="middle"
                     fontSize={11}
                     fontWeight={700}
-                    fill={POSITION_COLOR[m.position]}
+                    fill={POSITION_COLOR[m.position as string]}
                   >
-                    {fmt(m.value, m.unit)}
+                    {fmt(m.value as number, m.unit)}
                   </text>
                 </g>
               )}
             </g>
           );
         })}
+
+        <g transform={`translate(${LABEL_W}, ${height - 8})`}>
+          <circle cx={4} cy={-3} r={5} fill="var(--color-chart-3)" stroke="var(--background)" strokeWidth={2} />
+          <text x={16} y={0} fontSize={10} className="fill-muted-foreground">This company</text>
+          <path d="M 128 -6 l 3 3 l -3 3 l -3 -3 z" fill="var(--color-primary)" opacity={0.35} />
+          <text x={140} y={0} fontSize={10} className="fill-muted-foreground">Sector median</text>
+          <line x1={244} x2={264} y1={-3} y2={-3} stroke="var(--color-chart-5)" strokeWidth={7} strokeLinecap="round" opacity={0.55} />
+          <text x={272} y={0} fontSize={10} className="fill-muted-foreground">Sector range</text>
+        </g>
       </svg>
     </div>
   );
