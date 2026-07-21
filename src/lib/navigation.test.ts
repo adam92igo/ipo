@@ -7,17 +7,20 @@ describe("dashboard navigation", () => {
       ["Overview", "/dashboard"],
       ["Diagnostic", "/companies/company-1/assessment"],
       ["Valuation", "/companies/company-1/valuation"],
+      ["Forecast", "/companies/company-1/forecast"],
+      ["Benchmark", "/companies/company-1/benchmark"],
+      ["Market", "/companies/company-1/market-research"],
       ["Roadmap", "/companies/company-1/roadmap"],
       ["Assistant", "/assistant"],
     ]);
   });
 
   it("sends unavailable company modules to company setup", () => {
-    expect(getDashboardNav(null).slice(1, 4).every((item) => item.href === "/companies")).toBe(true);
+    expect(getDashboardNav(null).slice(1, 7).every((item) => item.href === "/companies")).toBe(true);
   });
 
   it("does not mark setup-bound company modules active", () => {
-    for (const label of ["Diagnostic", "Valuation", "Roadmap"] as const) {
+    for (const label of ["Diagnostic", "Valuation", "Forecast", "Benchmark", "Market", "Roadmap"] as const) {
       expect(isDashboardNavActive("/companies", label, null)).toBe(false);
     }
   });
@@ -26,6 +29,12 @@ describe("dashboard navigation", () => {
     expect(isDashboardNavActive("/companies/company-1/results", "Diagnostic", "company-1")).toBe(true);
     expect(isDashboardNavActive("/assistant", "Assistant", "company-1")).toBe(true);
     expect(isDashboardNavActive("/companies/company-2/valuation", "Valuation", "company-1")).toBe(false);
+    expect(isDashboardNavActive("/companies/company-1/forecast", "Forecast", "company-1")).toBe(true);
+    expect(isDashboardNavActive("/companies/company-1/valuation", "Forecast", "company-1")).toBe(false);
+    expect(isDashboardNavActive("/companies/company-1/benchmark", "Benchmark", "company-1")).toBe(true);
+    expect(isDashboardNavActive("/companies/company-1/forecast", "Benchmark", "company-1")).toBe(false);
+    expect(isDashboardNavActive("/companies/company-1/market-research", "Market", "company-1")).toBe(true);
+    expect(isDashboardNavActive("/companies/company-1/benchmark", "Market", "company-1")).toBe(false);
   });
 
   it("does not match unrelated route prefixes", () => {

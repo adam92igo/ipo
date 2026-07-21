@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "note": "Curated illustrative peer sets per sector for the benchmarking view — small, recently-listed or mid-cap French/European names whose approximate EV/EBITDA and EV/Revenue give an SME a sense of where comparable businesses trade. These are INDICATIVE reference points for orientation, drawn from public secondary aggregators and index surveys (Hectelion Valuation Multiples France/Switzerland 2026, Argos Index mid-market, Damodaran industry data Jan 2026); they are not live quotes, not audited, and not investment advice. Figures are order-of-magnitude and should be validated by a professional before any client-facing use. A `default` set is used when the sector is unmatched.",
+  "asOf": "2026-01",
+  "sectors": {
+    "software": {
+      "peers": [
+        { "name": "Mid-cap SaaS (Euronext Growth composite)", "market": "Euronext Growth Paris", "evEbitda": 14, "evRevenue": 3.2, "note": "Recurring-revenue software profile; upper end reflects growth premium." },
+        { "name": "IT services mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 11, "evRevenue": 1.8, "note": "Services mix lowers the revenue multiple vs pure SaaS." },
+        { "name": "Digital platform (composite)", "market": "Euronext Growth Paris", "evEbitda": 16, "evRevenue": 4.5, "note": "Scalable platform economics; high multiple, growth-dependent." }
+      ]
+    },
+    "industrials": {
+      "peers": [
+        { "name": "Precision manufacturing (composite)", "market": "Euronext Paris", "evEbitda": 8, "evRevenue": 1.1, "note": "Capital-intensive; multiples anchored to the Argos mid-market median." },
+        { "name": "Industrial equipment mid-cap (composite)", "market": "Euronext Growth Paris", "evEbitda": 9, "evRevenue": 1.3, "note": "Order-book visibility supports the upper band." }
+      ]
+    },
+    "healthcare": {
+      "peers": [
+        { "name": "Medtech mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 13, "evRevenue": 3.0, "note": "Regulatory moat and margins lift the multiple." },
+        { "name": "Healthcare services (composite)", "market": "Euronext Growth Paris", "evEbitda": 10, "evRevenue": 1.8, "note": "Lower multiple than product/medtech peers." }
+      ]
+    },
+    "consumer": {
+      "peers": [
+        { "name": "Consumer brand mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 9, "evRevenue": 1.1, "note": "Brand strength drives the spread within the band." },
+        { "name": "Specialty retail (composite)", "market": "Euronext Growth Paris", "evEbitda": 7, "evRevenue": 0.7, "note": "Thin margins keep multiples toward the low end." }
+      ]
+    },
+    "food": {
+      "peers": [
+        { "name": "Food processing mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 9, "evRevenue": 1.2, "note": "Defensive, lower-growth profile." },
+        { "name": "Beverage mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 8, "evRevenue": 1.3, "note": "Stable cash flows; multiple near the sector median." }
+      ]
+    },
+    "energy": {
+      "peers": [
+        { "name": "Renewables developer (composite)", "market": "Euronext Growth Paris", "evEbitda": 11, "evRevenue": 2.2, "note": "Pipeline and policy tailwinds support the upper band; low-confidence sector." }
+      ]
+    },
+    "business-services": {
+      "peers": [
+        { "name": "Business-services mid-cap (composite)", "market": "Euronext Paris", "evEbitda": 9, "evRevenue": 1.3, "note": "Asset-light; multiple near the sector median. Low-confidence sector." }
+      ]
+    },
+    "default": {
+      "peers": [
+        { "name": "General mid-market (Argos Index)", "market": "Eurozone unlisted mid-market", "evEbitda": 8, "evRevenue": 1.2, "note": "Argos Index / Epsilon Research eurozone mid-market median (~8.3x EBITDA, Q4 2025) — the fallback when the sector is unmatched." }
+      ]
+    }
+  }
+}

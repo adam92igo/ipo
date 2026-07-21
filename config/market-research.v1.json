@@ -1,0 +1,118 @@
+{
+  "version": "v1",
+  "note": "Market-research reference content for French SME IPO candidates: Euronext admission segments (Access, Access+, Growth, regulated) and per-sector market context + IPO-window notes. Admission thresholds are drawn from Euronext listing rules and the June 2026 EU Listing Act; sector context is curated from public secondary sources and is directional, not a live market feed. This is orientation for a first assessment, not investment advice or a guarantee of admission — final eligibility is set by Euronext and the AMF and should be confirmed with a listing sponsor.",
+  "asOf": "2026-06",
+  "listingActNote": "Since 5 June 2026 the EU Listing Act applies: a standardised €12M threshold below which no prospectus is required, English as the conventional disclosure language, a standardised prospectus format, and (pending national transposition) a move toward a 10% free-float requirement. Source: Euronext, 'Euronext introduces a new admission framework' (June 2026).",
+  "segments": [
+    {
+      "id": "access",
+      "label": "Euronext Access",
+      "tier": 0,
+      "minMarketCap": null,
+      "minFreeFloat": null,
+      "minAuditedYears": 0,
+      "summary": "Entry-level MTF for start-ups and SMEs joining a market to finance growth and gain visibility, with the simplest admission criteria.",
+      "bestFor": "Early-stage companies not yet meeting Growth criteria; admission possible via private placement or technical admission.",
+      "source": "Euronext, 'Choosing a Market' and Euronext Access Rule Book — no minimum public holding or market-cap requirement."
+    },
+    {
+      "id": "access_plus",
+      "label": "Euronext Access+",
+      "tier": 1,
+      "minMarketCap": null,
+      "minFreeFloat": 1000000,
+      "minAuditedYears": 2,
+      "summary": "A special compartment of Access tailored to fast-growing SMEs, acting as a springboard toward Growth and the regulated market.",
+      "bestFor": "Fast-growing SMEs wanting a step up from Access with more visibility and support.",
+      "source": "Euronext Access Rule Book — Access+ requires equity securities of at least €1M in public hands; two years of accounts expected."
+    },
+    {
+      "id": "growth",
+      "label": "Euronext Growth",
+      "tier": 2,
+      "minMarketCap": 10000000,
+      "minFreeFloat": 2500000,
+      "minAuditedYears": 2,
+      "summary": "An SME growth market (MTF) with proportionate obligations — the typical destination for an established, profitable French SME.",
+      "bestFor": "Established SMEs with two years of audited accounts and enough size to sustain a liquid free float.",
+      "source": "CMS Expert Guide to International ECM Listings (France): Euronext Growth Paris requires a €2.5M minimum free float on a public offering and two years of audited annual accounts; the €10M cap figure is an indicative working floor for a natural fit, not a hard rule."
+    },
+    {
+      "id": "regulated",
+      "label": "Euronext (regulated market)",
+      "tier": 3,
+      "minMarketCap": 25000000,
+      "minFreeFloat": 2500000,
+      "minAuditedYears": 3,
+      "summary": "The main EU-regulated market, with the fullest disclosure and governance obligations and the deepest institutional investor access.",
+      "bestFor": "Larger, mature companies able to meet full regulated-market obligations and free-float expectations.",
+      "source": "Indicative working thresholds for a natural fit on the regulated market (typical ~€25M+ cap, higher free float); exact criteria set by Euronext/AMF."
+    }
+  ],
+  "sectors": {
+    "software": {
+      "marketLabel": "Software & IT services",
+      "sizeTrend": "The French software/SaaS market has grown steadily on digitalisation and cloud adoption; recurring-revenue models command the highest valuation multiples of any SME sector.",
+      "drivers": ["Cloud/SaaS migration", "AI adoption", "Public-sector digitalisation", "European data-sovereignty demand"],
+      "ipoWindow": "Historically the most active French SME-IPO sector; investor appetite is strong for profitable, recurring-revenue software but has become more selective on unprofitable growth since 2023.",
+      "confidence": "medium",
+      "source": "Directional synthesis of Hectelion 2026 multiples commentary and general French tech-market coverage; not a quantified market-size study."
+    },
+    "industrials": {
+      "marketLabel": "Industrials & manufacturing",
+      "sizeTrend": "A large, mature base of French industrial SMEs (ETI/PME); reshoring and energy-transition capex are supportive structural themes.",
+      "drivers": ["Reshoring / 'Made in France'", "Energy-transition capex", "Automation & robotics", "Defense spending"],
+      "ipoWindow": "Steadier, valuation-sensitive investor demand; capital-intensive profiles are judged on order-book visibility and margins rather than growth alone.",
+      "confidence": "medium",
+      "source": "Directional synthesis of Argos Index mid-market commentary and general industrials coverage."
+    },
+    "healthcare": {
+      "marketLabel": "Healthcare & life sciences",
+      "sizeTrend": "Medtech and healthcare services benefit from ageing demographics and innovation; biotech is a distinct, binary-risk profile.",
+      "drivers": ["Ageing population", "Medtech innovation", "Reimbursement reform", "Health-data & AI diagnostics"],
+      "ipoWindow": "Selective; profitable medtech/services attract steady interest, while pre-revenue biotech IPO windows open and close with risk appetite.",
+      "confidence": "medium",
+      "source": "Directional synthesis of Hectelion healthcare multiples and general life-sciences coverage."
+    },
+    "consumer": {
+      "marketLabel": "Consumer goods & retail",
+      "sizeTrend": "Consumer/retail spans strong French brand and luxury adjacencies to thin-margin distribution; e-commerce continues to reshape the mix.",
+      "drivers": ["Brand & premiumisation", "E-commerce/omnichannel", "Sustainability demand", "Consumer confidence cycle"],
+      "ipoWindow": "Cyclical and confidence-sensitive; brand strength and margin resilience matter most to IPO investors.",
+      "confidence": "low",
+      "source": "Directional; no dedicated French SME consumer market-size source used."
+    },
+    "food": {
+      "marketLabel": "Food & beverage",
+      "sizeTrend": "A defensive, lower-growth sector with a deep French agroalimentaire base; stable cash flows over rapid expansion.",
+      "drivers": ["Premium & organic demand", "Supply-chain resilience", "Export/'French origin' premium", "Input-cost inflation"],
+      "ipoWindow": "Defensive appeal in uncertain markets, but modest growth caps valuations and IPO frequency.",
+      "confidence": "medium",
+      "source": "Directional synthesis of Damodaran food-processing data and general sector coverage."
+    },
+    "energy": {
+      "marketLabel": "Energy & environment",
+      "sizeTrend": "Cleantech and renewables benefit from strong policy tailwinds and energy-transition capital, though project economics are capital-intensive.",
+      "drivers": ["Energy transition & net-zero", "Policy subsidies", "Grid & storage investment", "ESG capital flows"],
+      "ipoWindow": "Thematically favoured by ESG-oriented capital, but sensitive to interest rates and subsidy regimes; a lower-confidence sector for benchmarking.",
+      "confidence": "low",
+      "source": "Directional; no dedicated French SME energy market-size source used."
+    },
+    "business-services": {
+      "marketLabel": "Business services",
+      "sizeTrend": "An asset-light, fragmented sector with steady demand for outsourcing and specialised B2B services.",
+      "drivers": ["Outsourcing demand", "Digital transformation services", "Consolidation / buy-and-build", "Talent availability"],
+      "ipoWindow": "Steady, margin-driven investor interest; scalability and client concentration are the key questions.",
+      "confidence": "low",
+      "source": "Directional; no dedicated French SME business-services market-size source used."
+    },
+    "default": {
+      "marketLabel": "General mid-market",
+      "sizeTrend": "The French mid-market (PME/ETI) is a broad, active base for private and public capital; conditions vary widely by sub-sector.",
+      "drivers": ["Macroeconomic cycle", "Interest-rate environment", "Sector-specific structural trends"],
+      "ipoWindow": "The French SME-IPO window has been more selective since 2023, favouring profitable, well-governed issuers; the June 2026 EU Listing Act aims to make listing easier and cheaper for SMEs.",
+      "confidence": "low",
+      "source": "Directional synthesis; general French mid-market and Euronext coverage."
+    }
+  }
+}
