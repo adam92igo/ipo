@@ -157,7 +157,7 @@ export default async function BenchmarkPage({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-border text-left font-utility text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="py-2 pr-4">Company</th>
                 <th className="py-2 pr-4">Market</th>
                 <th className="py-2 pr-4 text-right">EV/EBITDA</th>
@@ -170,17 +170,17 @@ export default async function BenchmarkPage({
                   key={p.name}
                   className="border-b border-border/60 last:border-0 align-top"
                 >
-                  <td className="py-3 pr-4">
+                  <td className="py-2 pr-4">
                     <span className="font-medium text-foreground">{p.name}</span>
                     <span className="mt-0.5 block max-w-md text-xs text-muted-foreground">
                       {p.note}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-muted-foreground">{p.market}</td>
-                  <td className="py-3 pr-4 text-right font-utility tabular-nums text-foreground">
+                  <td className="py-2 pr-4 text-muted-foreground">{p.market}</td>
+                  <td className="py-2 pr-4 text-right font-utility tabular-nums text-foreground">
                     {p.evEbitda === null ? "n/a" : `${p.evEbitda}x`}
                   </td>
-                  <td className="py-3 pr-4 text-right font-utility tabular-nums text-foreground">
+                  <td className="py-2 pr-4 text-right font-utility tabular-nums text-foreground">
                     {p.evRevenue === null ? "n/a" : `${p.evRevenue}x`}
                   </td>
                 </tr>

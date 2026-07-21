@@ -142,8 +142,8 @@ export default async function ValuationPage({
           </section>
 
           <InstrumentPanel
-            eyebrow="Prix de l'action"
-            title="Indicative share price"
+            eyebrow="Prix par action"
+            title="Prix indicatif par action"
           >
             <SharePricePanel
               companyId={company.id}
