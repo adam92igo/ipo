@@ -1,9 +1,13 @@
 import type { BenchmarkMetric } from "@/engines/benchmark";
+import { BENCHMARK_BAND_CHART_LAYOUT } from "./benchmark-band-chart-layout";
 
-const W = 640;
-const ROW_H = 58;
-const LABEL_W = 190;
-const PAD_R = 64;
+const {
+  width: W,
+  rowHeight: ROW_H,
+  labelWidth: LABEL_W,
+  padRight: PAD_R,
+  minCssWidth: MIN_CSS_WIDTH,
+} = BENCHMARK_BAND_CHART_LAYOUT;
 
 const POSITION_COLOR: Record<string, string> = {
   below: "var(--color-chart-4)",
@@ -24,7 +28,7 @@ export function BenchmarkBandChart({ metrics }: { metrics: BenchmarkMetric[] }) 
         role="img"
         aria-label="Company metrics versus sector reference bands"
         className="w-full font-utility tabular-nums"
-        style={{ minWidth: 520 }}
+        style={{ minWidth: MIN_CSS_WIDTH }}
       >
         {metrics.map((m, i) => {
           const cy = i * ROW_H + ROW_H / 2;
