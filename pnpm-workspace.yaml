@@ -9,3 +9,6 @@ overrides:
   # GHSA-f88m-g3jw-g9cj: HIGH-severity libvips vulnerabilities inherited by
   # sharp < 0.35.0 (next's optional image-optimization dependency).
   sharp: '>=0.35.0'
+  # GHSA-v2hh-gcrm-f6hx: HIGH-severity host-confusion/SSRF-relevant parsing
+  # bug in fast-uri < 3.1.4 (pulled in transitively via ajv).
+  fast-uri: '>=3.1.4'
