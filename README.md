@@ -151,6 +151,53 @@ branch and open a pull request; all 6 CI checks (see below) must pass before
 it can be merged. See [CLAUDE.md](CLAUDE.md) for the full architecture and
 workflow conventions.
 
+## Deployment
+
+Deployed on **Vercel** (Next.js hosting) + **Supabase** (managed PostgreSQL).
+There's no CLI/IaC for this yet — it's set up once by hand through each
+provider's dashboard:
+
+1. **Database** — create a Supabase project. Project Settings → Database →
+   Connection string has three variants; which one to use depends on what
+   you're doing:
+   - **Session pooler** — one-off admin work: running `pnpm db:migrate`, or
+     any script under `scripts/` (they hold a session open, which the
+     transaction pooler below doesn't support well for DDL).
+   - **Transaction pooler** — the app's runtime `DATABASE_URL` on Vercel:
+     serverless functions open many short-lived connections, which is what
+     transaction-mode pgbouncer is built for.
+   - **Direct connection** (`db.<ref>.supabase.co`) — avoid; it's IPv6-only on
+     new projects and commonly fails with `ENOTFOUND` on IPv4-only networks.
+
+   Apply the schema once with the session-pooler URL:
+
+   ```bash
+   DATABASE_URL="<session-pooler-connection-string>" pnpm db:migrate
+   ```
+
+2. **App** — import the repo into Vercel (Add New → Project; it needs the
+   Vercel GitHub App granted access since the repo is private). Framework
+   auto-detects as Next.js, no build command changes needed. Set environment
+   variables before the first deploy:
+
+   | Variable | Value |
+   | --- | --- |
+   | `DATABASE_URL` | the **transaction pooler** connection string |
+   | `BETTER_AUTH_SECRET` | `openssl rand -base64 32` |
+   | `BETTER_AUTH_URL` | the deployment URL (set *after* the first deploy, once it's known, then redeploy) |
+   | AI / Pappers keys | same variables as local `.env`, optional |
+
+   Deploy, note the assigned URL, set `BETTER_AUTH_URL` to it, and redeploy
+   (env var changes only apply to new builds).
+
+3. **CI stays the gate for `main`** (see below) — Vercel just builds and
+   serves whatever lands there; it doesn't replace the required checks.
+
+Current status (academic MVP, no real customers yet): the 3 demo accounts
+(see "Demo environment" below) were seeded directly into this same production
+database rather than a separate demo project, to keep infra simple. Revisit
+before onboarding real customers — see the note in that section.
+
 ## Demo environment
 
 A separate, disposable environment for showing the product (investors, sales)
@@ -203,6 +250,15 @@ degraded-mode banner instead.
 During a pitch, log out and back in between companies to move from stage to
 stage — that's the same flow a prospect goes through, which makes it a more
 honest demo than one account switching between several companies.
+
+**Production demo (current, temporary setup):** the same 3 accounts/companies
+above were also seeded directly into the production database (see
+"Deployment") so the demo is reachable on the live URL without running
+anything locally. This mixes fictional data into the production database and
+uses predictable, guessable login emails — acceptable only because this is an
+academic MVP with no real customers. Before onboarding a real customer, move
+the demo to its own Supabase/Vercel project (mirroring the local `pnpm demo` /
+`DEMO_DATABASE_URL` setup) instead of reseeding it here.
 
 ## Commands
 
