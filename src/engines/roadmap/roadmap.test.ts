@@ -31,7 +31,7 @@ const rules: RoadmapRules = {
   version: "test-1",
   note: "",
   rules: [
-    { id: "r1", title: "Fix Q1", description: "d1", category: "catA", priority: "critical", estimatedWeeks: 8, trigger: { type: "question", questionId: "q1", belowNorm: 1 } },
+    { id: "r1", title: "Fix Q1", description: "d1", category: "catA", priority: "critical", estimatedWeeks: 8, trigger: { type: "question", questionId: "q1", belowNorm: 1 }, reference: "Code de commerce, art. L. 227-2" },
     { id: "r2", title: "Improve Q2 a lot", description: "d2", category: "catB", priority: "high", estimatedWeeks: 4, trigger: { type: "question", questionId: "q2", belowNorm: 0.5 } },
     { id: "r3", title: "Rescue category B", description: "d3", category: "catB", priority: "critical", estimatedWeeks: 12, trigger: { type: "category", categoryId: "catB", belowScore: 60 } },
     { id: "r4", title: "Polish Q2", description: "d4", category: "catB", priority: "low", estimatedWeeks: 2, trigger: { type: "question", questionId: "q2", belowNorm: 1 } },
@@ -69,6 +69,14 @@ describe("generateRoadmap", () => {
     expect(generateRoadmap({ rules, questionnaire, answers })).toEqual(
       generateRoadmap({ rules, questionnaire, answers }),
     );
+  });
+
+  it("carries the regulatory reference through when the rule has one, null otherwise", () => {
+    const items = generateRoadmap({ rules, questionnaire, answers });
+    const byRule = new Map(items.map((i) => [i.ruleId, i.reference]));
+    expect(byRule.get("r1")).toBe("Code de commerce, art. L. 227-2");
+    expect(byRule.get("r3")).toBeNull();
+    expect(byRule.get("r4")).toBeNull();
   });
 
   it("skips rules pointing at unknown questions or categories", () => {

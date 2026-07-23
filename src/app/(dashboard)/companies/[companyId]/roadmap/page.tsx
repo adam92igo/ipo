@@ -100,7 +100,11 @@ export default async function RoadmapPage({
               month: "long",
               year: "numeric",
             })}
-            . Durations are indicative planning estimates.
+            . Durations are indicative planning estimates. Steps marked{" "}
+            <span className="font-semibold text-primary">Regulatory</span> cite a
+            specific French listing rule or law; steps marked{" "}
+            <span className="font-semibold">Best practice</span> are general
+            preparation advice with no single regulatory source.
           </p>
         </div>
       )}

@@ -70,6 +70,11 @@ describe("roadmap data-access", () => {
     expect(items[0].rulesVersion).toBe(CURRENT_ROADMAP_RULES_VERSION);
     expect(items[0].organizationId).toBe(ctx.organizationId);
     expect(items.map((i) => i.sortOrder)).toEqual(items.map((_, idx) => idx));
+
+    const audits = items.find((i) => i.ruleId === "r-audits")!;
+    expect(audits.reference).toMatch(/Euronext/);
+    const board = items.find((i) => i.ruleId === "r-board");
+    if (board) expect(board.reference).toBeNull();
   });
 
   it("refuses to generate for an in-progress assessment", async () => {
