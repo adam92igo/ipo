@@ -1,17 +1,17 @@
-/** Montants en EUR. Prix indicatif par action à partir de la valeur equity. */
+/** Amounts in EUR. Indicative price per share derived from the equity value. */
 
 import type { Range } from "@/engines/valuation/types";
 
 export type { Range };
 
 export interface ShareInputs {
-  /** Fourchette de valeur des capitaux propres (equity), EUR. */
+  /** Equity value range, EUR. */
   equity: Range;
   /** Number of existing shares (pre-IPO), > 0. */
   existingShares: number;
   /**
    * New shares issued in the IPO capital increase (>= 0).
-   * 0 => pas de dilution, le prix post-IPO égale le prix pré-IPO.
+   * 0 => no dilution, the post-IPO price equals the pre-IPO price.
    */
   newShares: number;
 }
@@ -26,13 +26,13 @@ export interface SharePriceRange {
 }
 
 export interface SharePriceResult {
-  /** Prix avant IPO : equity / actions existantes. */
+  /** Price before IPO: equity / existing shares. */
   preMoney: SharePriceRange;
-  /** Prix après IPO : equity / (existantes + nouvelles). */
+  /** Price after IPO: equity / (existing + new shares). */
   postMoney: SharePriceRange;
-  /** Dilution des actionnaires existants, en fraction (0.2 = 20%). */
+  /** Dilution of existing shareholders, as a fraction (0.2 = 20%). */
   dilution: number;
-  /** Produit brut indicatif levé (new shares × prix post-money mid), EUR. */
+  /** Indicative gross proceeds raised (new shares × post-money mid price), EUR. */
   grossProceedsMid: number;
   assumptions: string[];
 }

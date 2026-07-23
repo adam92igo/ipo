@@ -7,7 +7,7 @@ import type {
 
 export type * from "./types";
 
-/** Levée quand les entrées ne permettent pas de calculer un prix. */
+/** Thrown when the inputs don't allow a price to be computed. */
 export class InvalidShareInputError extends Error {
   constructor(reason: string) {
     super(reason);
@@ -30,15 +30,15 @@ function pricePerShare(equity: Range, shareCount: number): SharePriceRange {
 }
 
 /**
- * Prix indicatif par action, avant et après dilution IPO.
+ * Indicative price per share, pre- and post-IPO dilution.
  *
- * - Pré-money  : equity / actions existantes.
- * - Post-money : equity / (existantes + nouvelles actions émises).
- * - Dilution   : nouvelles / (existantes + nouvelles).
+ * - Pre-money  : equity / existing shares.
+ * - Post-money : equity / (existing + new shares issued).
+ * - Dilution   : new / (existing + new).
  *
- * Pur : pas d'I/O, pas d'IA, pas de dates. Mêmes entrées => même sortie.
- * Note: this is an INDICATIVE value (the equity value is already an
- * fourchette), pas un prix d'offre — celui-ci est fixé par le bookbuilding.
+ * Pure: no I/O, no AI, no dates. Same inputs => same output.
+ * Note: this is an INDICATIVE value (the equity value is already a
+ * range), not an offer price — that is set at bookbuilding.
  */
 export function computeSharePrice(inputs: ShareInputs): SharePriceResult {
   const { equity, existingShares, newShares } = inputs;
@@ -53,14 +53,14 @@ export function computeSharePrice(inputs: ShareInputs): SharePriceResult {
     );
   if (equity.low > equity.mid || equity.mid > equity.high)
     throw new InvalidShareInputError(
-      "la fourchette equity doit être ordonnée low <= mid <= high",
+      "the equity range must be ordered low <= mid <= high",
     );
 
   const totalShares = existingShares + newShares;
   const preMoney = pricePerShare(equity, existingShares);
   const postMoney = pricePerShare(equity, totalShares);
   const dilution = newShares === 0 ? 0 : round2(newShares / totalShares);
-  // Produit brut indicatif : nouvelles actions valorisées au prix post-money mid.
+  // Indicative gross proceeds: new shares valued at the post-money mid price.
   const grossProceedsMid = round0(newShares * postMoney.mid);
 
   const assumptions: string[] = [
