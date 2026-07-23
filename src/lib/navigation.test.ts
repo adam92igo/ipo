@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDashboardNav, isDashboardNavActive } from "./navigation";
+import { filterNavByPersona, getDashboardNav, isDashboardNavActive } from "./navigation";
 
 describe("dashboard navigation", () => {
   it("routes company modules through the only company", () => {
@@ -67,5 +67,41 @@ describe("dashboard navigation", () => {
         "company-1",
       ),
     ).toBe(false);
+  });
+});
+
+describe("filterNavByPersona", () => {
+  const nav = getDashboardNav("company-1");
+
+  it("demo keeps every module", () => {
+    expect(filterNavByPersona(nav, "demo").map((item) => item.label)).toEqual(
+      nav.map((item) => item.label),
+    );
+  });
+
+  it("owner sees only Overview and Assistant", () => {
+    expect(filterNavByPersona(nav, "owner").map((item) => item.label)).toEqual([
+      "Overview",
+      "Assistant",
+    ]);
+  });
+
+  it("cfo sees the numbers-oriented modules", () => {
+    expect(filterNavByPersona(nav, "cfo").map((item) => item.label)).toEqual([
+      "Overview",
+      "Valuation",
+      "Forecast",
+      "Benchmark",
+      "Market",
+      "Assistant",
+    ]);
+  });
+
+  it("department_lead sees only the diagnostic besides Overview and Assistant", () => {
+    expect(filterNavByPersona(nav, "department_lead").map((item) => item.label)).toEqual([
+      "Overview",
+      "Diagnostic",
+      "Assistant",
+    ]);
   });
 });

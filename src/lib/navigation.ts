@@ -1,3 +1,5 @@
+import type { Persona } from "./dashboard-persona";
+
 export type DashboardNavLabel =
   | "Overview"
   | "Diagnostic"
@@ -7,6 +9,22 @@ export type DashboardNavLabel =
   | "Market"
   | "Roadmap"
   | "Assistant";
+
+const PERSONA_NAV_LABELS: Record<Persona, DashboardNavLabel[]> = {
+  demo: [
+    "Overview",
+    "Diagnostic",
+    "Valuation",
+    "Forecast",
+    "Benchmark",
+    "Market",
+    "Roadmap",
+    "Assistant",
+  ],
+  owner: ["Overview", "Assistant"],
+  cfo: ["Overview", "Valuation", "Forecast", "Benchmark", "Market", "Assistant"],
+  department_lead: ["Overview", "Diagnostic", "Assistant"],
+};
 
 export interface DashboardNavItem {
   index: string;
@@ -78,4 +96,12 @@ export function isDashboardNavActive(
   if (label === "Benchmark") return matchesRoute(pathname, `${base}/benchmark`);
   if (label === "Market") return matchesRoute(pathname, `${base}/market-research`);
   return matchesRoute(pathname, `${base}/roadmap`);
+}
+
+export function filterNavByPersona(
+  items: DashboardNavItem[],
+  persona: Persona,
+): DashboardNavItem[] {
+  const allowed = PERSONA_NAV_LABELS[persona];
+  return items.filter((item) => allowed.includes(item.label));
 }

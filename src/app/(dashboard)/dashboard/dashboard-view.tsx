@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { usePersona } from "@/components/layout/persona-context";
 import {
   AssistantCTAPanel,
   CategoryBearingsPanel,
@@ -22,65 +20,14 @@ import {
 } from "./dashboard-panels";
 import { InstrumentPanel } from "@/components/layout/instrument-panel";
 
-const PERSONAS = ["demo", "owner", "cfo", "department_lead"] as const;
-type Persona = (typeof PERSONAS)[number];
-
-const PERSONA_LABELS: Record<Persona, string> = {
-  demo: "Demo",
-  owner: "Owner",
-  cfo: "CFO",
-  department_lead: "Department Lead",
-};
-
-const STORAGE_KEY = "ipo-compass:dashboard-persona";
-
-function isPersona(value: string | null): value is Persona {
-  return !!value && (PERSONAS as readonly string[]).includes(value);
-}
-
-function usePersistedPersona(): [Persona, (next: Persona) => void] {
-  const [persona, setPersona] = useState<Persona>("demo");
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (isPersona(stored)) setPersona(stored);
-  }, []);
-
-  const update = (next: Persona) => {
-    setPersona(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
-  };
-
-  return [persona, update];
-}
-
 export function DashboardView({ snapshot }: { snapshot: CompanySnapshot }) {
-  const [persona, setPersona] = usePersistedPersona();
+  const [persona] = usePersona();
   const hrefs = companyHrefs(snapshot.company.id);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2 border border-border bg-card p-1.5">
-        {PERSONAS.map((option) => (
-          <Button
-            key={option}
-            type="button"
-            size="sm"
-            variant={persona === option ? "default" : "ghost"}
-            className={cn(persona !== option && "text-muted-foreground")}
-            onClick={() => setPersona(option)}
-          >
-            {PERSONA_LABELS[option]}
-          </Button>
-        ))}
-      </div>
-
-      {persona === "demo" && <DemoView snapshot={snapshot} hrefs={hrefs} />}
-      {persona === "owner" && <OwnerView snapshot={snapshot} hrefs={hrefs} />}
-      {persona === "cfo" && <CFOView snapshot={snapshot} hrefs={hrefs} />}
-      {persona === "department_lead" && <DepartmentLeadView snapshot={snapshot} hrefs={hrefs} />}
-    </div>
-  );
+  if (persona === "owner") return <OwnerView snapshot={snapshot} hrefs={hrefs} />;
+  if (persona === "cfo") return <CFOView snapshot={snapshot} hrefs={hrefs} />;
+  if (persona === "department_lead") return <DepartmentLeadView snapshot={snapshot} hrefs={hrefs} />;
+  return <DemoView snapshot={snapshot} hrefs={hrefs} />;
 }
 
 function DemoView({
