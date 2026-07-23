@@ -14,9 +14,22 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { UserMenu } from "@/components/user-menu";
 import { cn } from "@/lib/utils";
-import { getDashboardNav, isDashboardNavActive } from "@/lib/navigation";
+import {
+  filterNavByPersona,
+  getDashboardNav,
+  isDashboardNavActive,
+} from "@/lib/navigation";
+import { PERSONA_LABELS, PERSONAS } from "@/lib/dashboard-persona";
+import { usePersona } from "./persona-context";
 
 interface AppHeaderProps {
   company: { id: string; name: string; country: string } | null;
@@ -35,7 +48,8 @@ export function AppHeader({
 }: AppHeaderProps) {
   const pathname = usePathname();
   const companyId = company?.id ?? null;
-  const navigation = getDashboardNav(companyId);
+  const [persona, setPersona] = usePersona();
+  const navigation = filterNavByPersona(getDashboardNav(companyId), persona);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card text-primary shadow-sm">
@@ -64,6 +78,20 @@ export function AppHeader({
                   IPO readiness command
                 </SheetDescription>
               </SheetHeader>
+              <div className="border-b border-white/10 px-6 py-4">
+                <Select value={persona} onValueChange={(value) => setPersona(value as typeof persona)}>
+                  <SelectTrigger size="sm" aria-label="Dashboard view" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERSONAS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {PERSONA_LABELS[option]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <nav aria-label="Mobile navigation" className="flex flex-col px-3 py-2">
                 {navigation.map((item) => {
                   const active = isDashboardNavActive(pathname, item.label, companyId);
@@ -135,6 +163,19 @@ export function AppHeader({
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-3 py-2 lg:ml-5">
+          <Select value={persona} onValueChange={(value) => setPersona(value as typeof persona)}>
+            <SelectTrigger size="sm" aria-label="Dashboard view" className="hidden sm:flex">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PERSONAS.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {PERSONA_LABELS[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <div className="hidden max-w-40 border-l border-border pl-3 text-right xl:block">
             <p className="truncate text-sm font-semibold">{company?.name ?? "Company setup"}</p>
             <p className="truncate font-utility text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground">
