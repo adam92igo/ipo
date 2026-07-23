@@ -12,3 +12,7 @@ overrides:
   # GHSA-v2hh-gcrm-f6hx: HIGH-severity host-confusion/SSRF-relevant parsing
   # bug in fast-uri < 3.1.4 (pulled in transitively via ajv).
   fast-uri: '>=3.1.4'
+  # GHSA-6g55-p6wh-862q: arbitrary file read via attacker-controlled
+  # sourceMappingURL in postcss < 8.5.12 (pulled in transitively via next
+  # and @tailwindcss/postcss/shadcn).
+  postcss: '>=8.5.12'
