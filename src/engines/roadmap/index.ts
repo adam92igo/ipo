@@ -67,5 +67,6 @@ export function generateRoadmap({
       priority: rule.priority,
       estimatedWeeks: rule.estimatedWeeks,
       sortOrder: index,
+      reference: rule.reference ?? null,
     }));
 }

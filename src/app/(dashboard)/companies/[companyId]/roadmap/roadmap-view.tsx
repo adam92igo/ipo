@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Scale } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -132,7 +132,22 @@ export function RoadmapItemCard({
                   ~{item.estimatedWeeks} weeks
                 </span>
               )}
+              {item.reference ? (
+                <Badge variant="outline" className="gap-1 border-accent text-primary uppercase">
+                  <Scale className="size-3" />
+                  Regulatory
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="uppercase text-muted-foreground">
+                  Best practice
+                </Badge>
+              )}
             </div>
+            {item.reference && (
+              <p className="border-l-2 border-accent pl-2 text-xs italic text-muted-foreground">
+                {item.reference}
+              </p>
+            )}
           </div>
           <Select value={item.status} onValueChange={handleStatus} disabled={pending}>
             <SelectTrigger className="w-36" aria-label={`Status of: ${item.title}`}>

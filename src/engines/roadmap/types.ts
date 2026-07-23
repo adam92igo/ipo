@@ -22,6 +22,8 @@ export interface RoadmapRule {
   priority: RoadmapPriority;
   estimatedWeeks: number;
   trigger: QuestionTrigger | CategoryTrigger;
+  /** Regulatory citation backing this rule, when one applies. */
+  reference?: string;
 }
 
 export interface RoadmapRules {
@@ -40,4 +42,6 @@ export interface RoadmapItemSpec {
   estimatedWeeks: number;
   /** Position in the ordered plan (0-based). */
   sortOrder: number;
+  /** Regulatory citation backing this step, or null when it's general best practice. */
+  reference: string | null;
 }

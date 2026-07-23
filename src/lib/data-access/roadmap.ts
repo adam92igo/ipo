@@ -109,6 +109,7 @@ export async function generateRoadmapForAssessment(
           category: spec.categoryId,
           priority: spec.priority,
           estimatedWeeks: spec.estimatedWeeks,
+          reference: spec.reference,
           sortOrder: spec.sortOrder,
           status: previousStatus.get(spec.ruleId) ?? ("todo" as const),
         })),

@@ -208,6 +208,9 @@ export const roadmapItem = pgTable(
     category: text("category").notNull(),
     priority: roadmapPriorityEnum("priority").notNull(),
     estimatedWeeks: integer("estimated_weeks"),
+    // Regulatory citation backing this step, from the rule's config; null for
+    // general best-practice items with no specific legal reference.
+    reference: text("reference"),
     status: roadmapStatusEnum("status").notNull().default("todo"),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
