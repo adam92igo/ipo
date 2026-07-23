@@ -385,21 +385,21 @@ export default async function DashboardPage() {
         </InstrumentPanel>
 
         <InstrumentPanel
-          eyebrow="Prix de l'action"
+          eyebrow="Share price"
           title="Share price"
-          action={moduleAction(valuationHref, valuation.kind === "available" ? "Voir le prix" : "Lancer la valorisation")}
+          action={moduleAction(valuationHref, valuation.kind === "available" ? "View price" : "Run valuation")}
         >
           {valuation.kind === "available" ? (
             <p className="text-sm text-muted-foreground">
-              Prix indicatif par action dérivé de la fourchette de valeur, avant
-              et après dilution IPO. Saisissez le nombre d&apos;actions sur la
-              page Valuation pour l&apos;afficher.
+              Indicative price per share derived from the valuation range,
+              pre- and post-IPO dilution. Enter the share count on the
+              Valuation page to display it.
             </p>
           ) : (
             <SnapshotState
-              title="Calculez le prix par action"
-              description="Lancez d'abord la valorisation, puis saisissez le nombre d'actions pour obtenir un prix indicatif pré et post-dilution."
-              action={moduleAction(valuationHref, valuation.kind === "missing_financials" ? "Ajouter les comptes" : "Lancer la valorisation")}
+              title="Calculate the share price"
+              description="Run the valuation first, then enter the share count to get an indicative pre- and post-dilution price."
+              action={moduleAction(valuationHref, valuation.kind === "missing_financials" ? "Add financials" : "Run valuation")}
             />
           )}
         </InstrumentPanel>
